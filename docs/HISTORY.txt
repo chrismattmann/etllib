@@ -1,0 +1,15 @@
+Changelog
+*********
+
+0.0.0 - Initial
+===============
+
+This is an initial release of kivatikasolrlib supporting capability for
+reformulating JSON data for Kiva using Tika_ and JSON read/write in prep
+for ETL using OODT_ into Solr_.
+
+
+.. References:
+.. _OODT: http://oodt.apache.org/
+.. _Tika: http://tika.apache.org/
+.. _Solr: http://lucene.apache.org/solr/

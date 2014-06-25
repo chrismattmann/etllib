@@ -1,0 +1,104 @@
+Using KivaTikaSolrlib
+****************
+
+Installing the KivaTikaSolrLIb package makes available four things on your
+computer:
+
+``kivarepackage`` command
+    The ``kivarepackage`` command takes an original paged Kiva JSON file, strips
+    off the paging information, isolates the identified object type (e.g., "teams"
+    or "journal_entries", etc.), and may perform some basic cleaning and metadata
+    addition using Apache Tika on the fields within the JSON document.
+``kivaposter`` command
+    The ``kivaposter`` command lets post individual reformulated Kiva JSON documents
+    to Apache Solr.
+``kivarepackageandpost`` command
+    The kivarepackageandpost command combines kivarepackage, and kivaposter, and
+    obviates the need to store the repackaged JSON doc as an intermediate file, and
+    then repackages (keeps docs in memory) and then posts directly to Apache Solr.
+    
+KivaTikaSolrLib Library
+    The KivaTikaSolrLib Library is a Python-based API for munging Kiva data and
+    doing ETL. The library was originally developed as a set of Python scripts 
+    to be integrated into an Apache OODT ETL process through parsing/Apache Tika 
+    cleanup and then on to Apache Solr for analytics.
+    
+This document describes how to use the above three items, with special
+attention to the KivaTikaSolrLib library.
+
+Commands
+========
+
+After installing the KivaTikaSolrLib package, three new commands are made available on
+your system, ``kivarepackage`` and ``kivaposter`` and ``kivarepackageandpost``.  These 
+commands enable you to reformulate aggregate Kiva JSON documents, cleanse their fields
+(which may contain UTF-8 or other weird encodings) using Apache Tika, and then to post those
+documents to Apache Solr. These were developed initially independently as python scripts
+that are wrapped using Apache OODT ETL workflows, but later Chris Mattmann <mattmann@apache.org>
+decided they would be useful as a installable python library.
+
+To use these commands from your interactive prompt, you just need to make sure
+your shell's PATH environment variable includes the directory where the
+commands are installed.  On most systems, these two commands are installed in::
+
+    /usr/bin
+
+However, on Mac OS X, the installation location may be::
+
+    /Library/Frameworks/Python.framework/Versions/Current/bin
+    
+And on Windows, it may be::
+
+    c:\Program Files\Python
+    
+Note also that some interactive shells create a cache of commands in order to
+execute your requests more quickly.  You may need to force your shell to
+re-build that cache.  The csh and tcsh shells are two such examples; you can
+make these shells rebuild their caches by running the ``rehash`` command.
+
+
+Use from Shell Scripts
+----------------------
+
+The ``kivarepackage`` and ``kivaposter`` and ``kivarepackageandpost`` commands 
+may be used from shell scripts as well.  The only requirement for making these 
+commands available to shell scripts is the same as for interactive sessions:  
+the shell's PATH environment variable must include the directory that contains 
+the ``kivarepackage`` and ``kivaposter`` and ``kivarepackageandpost`` commands.
+
+Here is a sample shell script that repackages a Kiva Teams JSON file of 20 aggregate
+records, and outputs 20 individual Teams JSON files ::
+
+    #!/bin/bash
+
+    for ag in $(ls /data/xdata/Kiva/raw/RAW_kiva_json_teams_9Feb2013); do 
+        kivarepackage -j $ag -o teams
+    done
+
+    
+The above shell script assumes that ``kivarepackage`` will be found in
+``/usr/local/bin``, ``/usr/bin``, or ``/bin``.  It then loops through
+the aggregate teams JSON files from the KIVA raw dataset and then hands
+each aggregate JSON file to the kivarepackage script, which unravels those
+1234 teams JSON data files into 1234 * 20 = 24680 individual team JSON files.
+
+The ``kivaposter`` command and ``kivarepackageandpost`` command may also be 
+used from a shell script.  
+
+Some example working commands are:
+
+Pipe a single Kiva JSON journal entries file into the kivarepackageandpost script::
+
+echo "/data/xdata/Kiva/raw/RAW_kiva_json_journalEntries_04Mar2013/365/191677_journalentries_pg1_retreived-2013_03_04_21_56.json" \
+| kivarepackageandpost -u "http://localhost:8080/kivasolr/journalentries/update/json?commit=true" -o journal_entries -v
+
+KivaTikaSolrlib Library
+===========
+
+The KivaTikaSolrlib Library is a Python-based application programming interface (API) for
+munging and processing KIVA JSON data for ETL and analytics. In fact, the three commands 
+``kivaposter`` and ``kivarepackage`` and ``kivarepackageandpost`` are implemented using 
+the KivaTikaSolrlib Library.  If shell-script programming is not to your taste, and you
+know Python, then using the KivaTikaSolrlib Library may be right for you.
+
+
