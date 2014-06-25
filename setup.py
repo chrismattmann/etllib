@@ -25,17 +25,17 @@ from setuptools import setup, find_packages
 version = '0.0.0'
 
 _descr = u'''**********
-kivatikasolrlib
+etllib
 ***************
 
 .. contents::
 
-KivaTikaSolrlib provides functionality for munging through and repackaging
-Kiva JSON data for preparation and submission (ETL) to Apache Solr. The 
+ETLlib provides functionality for munging through and repackaging
+JSON, TSV and other data for preparation and submission (ETL) to Apache Solr. The 
 library takes advantage of Apache Tika, and is callable from Apache OODT.
 
 '''
-_keywords = 'xdata kiva tika solr oodt jpl mda isi'
+_keywords = 'xdata darpa etl tika solr oodt jpl'
 _classifiers = [
     'Development Status :: 3 - Alpha',
     'Environment :: Console',
@@ -57,27 +57,27 @@ long_description = _descr + read('docs', 'INSTALL.txt') + '\n' + read('docs', 'U
 open('doc.txt', 'w').write(long_description)
 
 setup(
-    name='kivatikasolrlib',
+    name='etllib',
     version=version,
-    description='Kiva Tika Solr lib',
+    description='Extract, Transform and Load lib',
     long_description=long_description,
     classifiers=_classifiers,
     keywords=_keywords,
     author='Chris Mattmann',
     author_email='chris.a.mttmnn@nasa.gov',
-    url='http://xdata-public.jpl.nasa.gov/search/',
-    download_url='http://xdata-public.jpl.nasa.gov/dist/kiva',
+    url='http://github.com/chrismattmann/etllib',
+    download_url='http://github.com/chrismattmann/etllib',
     license=read('docs', 'LICENSE.txt'),
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['kiva'],
+    namespace_packages=['etl'],
     include_package_data=True,
     zip_safe=True,
-    test_suite='kiva.tests',
+    test_suite='etl.tests',
     entry_points={
         'console_scripts': [
-            'kivaposter = kiva.poster:main',
-            'kivarepackage = kiva.repackage:main',
-            'kivarepackageandpost = kiva.repackageandpost:main',
+            'poster = etl.poster:main',
+            'repackage = etl.repackage:main',
+            'repackageandpost = etl.repackageandpost:main',
         ],
     }, 
     package_data = {

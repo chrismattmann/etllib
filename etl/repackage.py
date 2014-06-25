@@ -19,7 +19,7 @@
 #
 # Author: mattmann
 # Description: Use this script by running it against a JSON file
-# for the KIVA data. It will reformulate the file by removing
+# that contains an outer struct of data. It will reformulate the file by removing
 # the paging and other data, and just leaving the doc struct.
 # Also does some cleansing of the data, using Tika and other nifty
 # tools
@@ -27,18 +27,18 @@
 import sys
 import os
 import getopt
-from tikasolrlib import cleanseImage, cleanseBody, unravelStructs, prepareDocs, writeDoc
+from etllib import cleanseImage, cleanseBody, unravelStructs, prepareDocs, writeDoc
 
 _verbose = False
 _helpMessage = '''
-Usage: kivarepackage [-v] [-j json file] [-o object type]
+Usage: repackage [-v] [-j json file] [-o object type]
 
 Options:
 -j json file, --json=file
-    The origin Kiva JSON object file to repackage and extract out 
+    The origin JSON object file to repackage and extract out 
     individual object types from.
 -o object type --object=type
-    The object type from Kiva (e.g., "journal_entries", "teams", "partners")
+    The object type from the JSON (e.g., "journal_entries", "teams", "partners")
     to unravel from the aggregate JSON doc.
 -v, --verbose
     Work verbosely rather than silently.
@@ -90,14 +90,14 @@ def main(argv=None):
 
        f = open(jsonFile, 'r')
        jsonContents = f.read()
-       jsonKivas = prepareDocs(jsonContents, objectType)
-       for kiva in jsonKivas:
-        cleanseImage(kiva)
-        cleanseBody(kiva)
-        unravelStructs(kiva)    
-        filePath = os.getcwd() + "/" + str(kiva["id"])+".json"
+       jsonObjects = prepareDocs(jsonContents, objectType)
+       for obj in jsonObject:
+        cleanseImage(obj)
+        cleanseBody(obj)
+        unravelStructs(obj)    
+        filePath = os.getcwd() + "/" + str(obj["id"])+".json"
         verboseLog("Writing json file: ["+filePath+"]")
-        writeDoc(kiva, filePath)
+        writeDoc(obj, filePath)
     
    except _Usage, err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)

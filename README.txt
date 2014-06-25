@@ -1,17 +1,17 @@
 ============
-KivaTikaSolrlib
+ETL lib
 ============
 
-This is the KivaTikaSolrlib package.  It provides an API
-to munge and prepare KIVA JSON data using Apache Tika and
+This is the ETL lib package.  It provides an API
+to munge and prepare JSON, TSV and other data using Apache Tika and
 JSON parsing/loading for ETL via Apache OODT (or other libs)
 into Apache Solr.  It also provides three command-line tools:
 
-kivarepackage
-    Repackages an aggregate Kiva JSON file into its constituent data files (may use Tika).
-kivaposter
-    Posts a KIVA JSON doc to Solr.
-kivarepackageandpost
+repackage
+    Repackages an aggregate JSON file into its constituent data files (may use Tika).
+poster
+    Posts a JSON doc to Solr.
+repackageandpost
 	Combines repackage and posting to Solr without the need for an intermediate file.
 
 For installation instructions, please see docs/INSTALL.txt.

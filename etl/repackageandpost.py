@@ -17,9 +17,9 @@
 # limitations under the License.
 #
 # Author: mattmann
-# Description: this is a python script that combines the kiva_repackage
-# functionality for journal entries, skips writing the intermediate file
-# processes and cleanses the journal entries from the file and posts them
+# Description: this is a python script that combines the repackage
+# functionality for JSON entries, skips writing the intermediate file
+# processes and cleanses the entries from the file and posts them
 # as documents to solr.
 # 
 # find . -name "*.json" | xargs /path/to/repackageandposter.py -u solrUrl
@@ -27,7 +27,7 @@
 # Things to update/fix:
 
 
-from tikasolrlib import prepareDocs, cleanseBody, cleanseImage, unravelStructs, prepareDocForSolr, postJsonDocToSolr
+from etllib import prepareDocs, cleanseBody, cleanseImage, unravelStructs, prepareDocForSolr, postJsonDocToSolr
 import getopt
 import sys
 import os
@@ -35,14 +35,14 @@ import os
 
 _verbose = False
 _helpMessage = '''
-Usage: kivarepackageandpost [-v] [-u url] [-o object type]
+Usage: repackageandpost [-v] [-u url] [-o object type]
 
 Options:
 -u url, --url=url
     Post to Apache Solr at the given url.
 
 -o object type --object=type
-    The object type from Kiva (e.g., "journal_entries", "teams", "partners")
+    The object type from the JSON file (e.g., "journal_entries", "teams", "partners")
     to unravel from the aggregate JSON doc.
     
 -v, --verbose
@@ -100,12 +100,12 @@ def main(argv=None):
            verboseLog("Processing: "+filename)
            f = open(filename, 'r')
            jsonContents = f.read()
-           jsonKivas = prepareDocs(jsonContents, objectType)
-           for kiva in jsonKivas:
-               cleanseImage(kiva)
-               cleanseBody(kiva)
-               unravelStructs(kiva)    
-               postString = prepareDocForSolr(kiva, False)
+           jsonObjs = prepareDocs(jsonContents, objectType)
+           for obj in jsonObjs:
+               cleanseImage(obj)
+               cleanseBody(obj)
+               unravelStructs(obj)    
+               postString = prepareDocForSolr(obj, False)
                verboseLog(postString)
                postJsonDocToSolr(solrUrl, postString)
 

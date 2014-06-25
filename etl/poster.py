@@ -26,11 +26,11 @@
 import os
 import sys
 import getopt
-from tikasolrlib import prepareDocForSolr, postJsonDocToSolr
+from etllib import prepareDocForSolr, postJsonDocToSolr
 
 _verbose = False
 _helpMessage = '''
-Usage: kivaposter [-v] [-u url] 
+Usage: poster [-v] [-u url] 
 
 Options:
 -u url, --url=url

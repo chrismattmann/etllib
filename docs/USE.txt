@@ -1,37 +1,37 @@
-Using KivaTikaSolrlib
+Using ETLlib
 ****************
 
-Installing the KivaTikaSolrLIb package makes available four things on your
+Installing the ETLlib package makes available four things on your
 computer:
 
-``kivarepackage`` command
-    The ``kivarepackage`` command takes an original paged Kiva JSON file, strips
+``repackage`` command
+    The ``repackage`` command takes an original paged JSON file, strips
     off the paging information, isolates the identified object type (e.g., "teams"
     or "journal_entries", etc.), and may perform some basic cleaning and metadata
     addition using Apache Tika on the fields within the JSON document.
-``kivaposter`` command
-    The ``kivaposter`` command lets post individual reformulated Kiva JSON documents
+``poster`` command
+    The ``poster`` command lets post individual reformulated  JSON documents
     to Apache Solr.
-``kivarepackageandpost`` command
-    The kivarepackageandpost command combines kivarepackage, and kivaposter, and
+``repackageandpost`` command
+    The repackageandpost command combines repackage, and poster, and
     obviates the need to store the repackaged JSON doc as an intermediate file, and
     then repackages (keeps docs in memory) and then posts directly to Apache Solr.
     
-KivaTikaSolrLib Library
-    The KivaTikaSolrLib Library is a Python-based API for munging Kiva data and
+ETLlib Library
+    The ETLlib Library is a Python-based API for munging  data and
     doing ETL. The library was originally developed as a set of Python scripts 
     to be integrated into an Apache OODT ETL process through parsing/Apache Tika 
     cleanup and then on to Apache Solr for analytics.
     
 This document describes how to use the above three items, with special
-attention to the KivaTikaSolrLib library.
+attention to the ETLlib library.
 
 Commands
 ========
 
-After installing the KivaTikaSolrLib package, three new commands are made available on
-your system, ``kivarepackage`` and ``kivaposter`` and ``kivarepackageandpost``.  These 
-commands enable you to reformulate aggregate Kiva JSON documents, cleanse their fields
+After installing the ETLlib package, three new commands are made available on
+your system, ``repackage`` and ``poster`` and ``repackageandpost``.  These 
+commands enable you to reformulate aggregate  JSON documents, cleanse their fields
 (which may contain UTF-8 or other weird encodings) using Apache Tika, and then to post those
 documents to Apache Solr. These were developed initially independently as python scripts
 that are wrapped using Apache OODT ETL workflows, but later Chris Mattmann <mattmann@apache.org>
@@ -60,45 +60,45 @@ make these shells rebuild their caches by running the ``rehash`` command.
 Use from Shell Scripts
 ----------------------
 
-The ``kivarepackage`` and ``kivaposter`` and ``kivarepackageandpost`` commands 
+The ``repackage`` and ``poster`` and ``repackageandpost`` commands 
 may be used from shell scripts as well.  The only requirement for making these 
 commands available to shell scripts is the same as for interactive sessions:  
 the shell's PATH environment variable must include the directory that contains 
-the ``kivarepackage`` and ``kivaposter`` and ``kivarepackageandpost`` commands.
+the ``repackage`` and ``poster`` and ``repackageandpost`` commands.
 
-Here is a sample shell script that repackages a Kiva Teams JSON file of 20 aggregate
+Here is a sample shell script that repackages a  Teams JSON file of 20 aggregate
 records, and outputs 20 individual Teams JSON files ::
 
     #!/bin/bash
 
-    for ag in $(ls /data/xdata/Kiva/raw/RAW_kiva_json_teams_9Feb2013); do 
-        kivarepackage -j $ag -o teams
+    for ag in $(ls /data/xdata/Kiva/raw/RAW__json_teams_9Feb2013); do 
+        repackage -j $ag -o teams
     done
 
     
-The above shell script assumes that ``kivarepackage`` will be found in
+The above shell script assumes that ``repackage`` will be found in
 ``/usr/local/bin``, ``/usr/bin``, or ``/bin``.  It then loops through
-the aggregate teams JSON files from the KIVA raw dataset and then hands
-each aggregate JSON file to the kivarepackage script, which unravels those
+the aggregate teams JSON files from the Kiva raw dataset and then hands
+each aggregate JSON file to the repackage script, which unravels those
 1234 teams JSON data files into 1234 * 20 = 24680 individual team JSON files.
 
-The ``kivaposter`` command and ``kivarepackageandpost`` command may also be 
+The ``poster`` command and ``repackageandpost`` command may also be 
 used from a shell script.  
 
 Some example working commands are:
 
-Pipe a single Kiva JSON journal entries file into the kivarepackageandpost script::
+Pipe a single  JSON journal entries file into the repackageandpost script::
 
-echo "/data/xdata/Kiva/raw/RAW_kiva_json_journalEntries_04Mar2013/365/191677_journalentries_pg1_retreived-2013_03_04_21_56.json" \
-| kivarepackageandpost -u "http://localhost:8080/kivasolr/journalentries/update/json?commit=true" -o journal_entries -v
+echo "/data/xdata/Kiva/raw/RAW__json_journalEntries_04Mar2013/365/191677_journalentries_pg1_retreived-2013_03_04_21_56.json" \
+| repackageandpost -u "http://localhost:8080/solr/journalentries/update/json?commit=true" -o journal_entries -v
 
-KivaTikaSolrlib Library
+ETLlib Library
 ===========
 
-The KivaTikaSolrlib Library is a Python-based application programming interface (API) for
-munging and processing KIVA JSON data for ETL and analytics. In fact, the three commands 
-``kivaposter`` and ``kivarepackage`` and ``kivarepackageandpost`` are implemented using 
-the KivaTikaSolrlib Library.  If shell-script programming is not to your taste, and you
-know Python, then using the KivaTikaSolrlib Library may be right for you.
+The ETLlib Library is a Python-based application programming interface (API) for
+munging and processing  JSON data for ETL and analytics. In fact, the three commands 
+``poster`` and ``repackage`` and ``repackageandpost`` are implemented using 
+the ETLlib Library.  If shell-script programming is not to your taste, and you
+know Python, then using the ETLlib Library may be right for you.
 
 
