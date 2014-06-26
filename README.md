@@ -4,7 +4,7 @@ ETL lib
 This is the ETL lib package.  It provides an API
 to munge and prepare JSON, TSV and other data using Apache Tika and
 JSON parsing/loading for ETL via Apache OODT (or other libs)
-into Apache Solr.  It also provides three command-line tools:
+into Apache Solr.  It also provides the following command-line tools:
 
 ```
 repackage
