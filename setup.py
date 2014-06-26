@@ -78,6 +78,7 @@ setup(
             'poster = etl.poster:main',
             'repackage = etl.repackage:main',
             'repackageandpost = etl.repackageandpost:main',
+            'tsvtojson = etl.tsvtojson:main',
         ],
     }, 
     package_data = {
@@ -89,6 +90,7 @@ setup(
         'iso8601',
         'jcc',
         'tika>=1.4',
+        'python-magic'
     ],
     dependency_links=[
         'https://github.com/chrismattmann/python-tika-with-deps/zipball/master#egg=tika-1.4'

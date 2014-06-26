@@ -24,30 +24,129 @@
 # that you are transforming. Each line in the column headers text file
 # is simply the header name. If you add a ":" postfix to the header name,
 # the header is considered optional and will only be read if present in
-# the file.
+# the file. If you add a * to the header name, this header will be used 
+# to  add an optional "id" field to the resultant JSON document.
 
 import csv
 import json
+import sys
+import getopt
+import magic
+import uuid
 
-jsonStructs = []
-cols = []
-with open("colheaders.txt") as headers:
-    cols = headers.read().splitlines()
-    print cols
 
-with open ("computrabajo-ve-20121108.tsv") as tsv:
-    for line in csv.reader(tsv, dialect="excel-tab"):
-        jsonStruct={}
-        diff = len(cols)-len(line)
+_verbose = False
+_helpMessage = '''
+Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file]
 
-        for num in range(0, len(cols)-1):
-            if ":" in cols[num] and diff > 0:
-                diff = diff - 1
-                continue
+Options:
+-t tsv file, --tsv=file
+    Parse the given TSV file and turn it into JSON.
+-j json file --json=file
+    Output the named JSON file.
+-c column headers file --cols=file
+    Use the provided column headers to parse the TSV and to name fields in the JSON.
+-o object type --object=type
+    Wrap the list of objects for each row in the TSV file in the named JSON object type.    
+-v, --verbose
+    Work verbosely rather than silently.
+'''
 
-            jsonStruct[cols[num]] = line[num]
-        jsonStructs.append(jsonStruct)
+def verboseLog(message):
+    if _verbose:
+        print >>sys.stderr, message
 
-outFile = open("foo.json", "wb")
-json.dump(jsonStructs, outFile, encoding="latin-1")
+class _Usage(Exception):
+    '''An error for problems with arguments on the command line.'''
+    def __init__(self, msg):
+        self.msg = msg
 
+def main(argv=None):
+   if argv is None:
+     argv = sys.argv
+
+   try:
+       try:
+          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:',['help', 'verbose', 'tsv=','json=','cols=','object='])
+       except getopt.error, msg:
+         raise _Usage(msg)    
+     
+       if len(opts) == 0:
+           raise _Usage(_helpMessage)
+         
+       jsonStructs = []
+       cols = []
+       colHeaderFilePath = None
+       jsonFilePath = None
+       tsvFilePath = None
+       objectType = None
+      
+       for option, value in opts:
+          if option in ('-h', '--help'):
+             raise _Usage(_helpMessage)
+          elif option in ('-t', '--tsv'):
+             tsvFilePath = value
+          elif option in ('-j', '--json'):
+            jsonFilePath = value
+          elif option in ('-c', '--cols'):
+             colHeaderFilePath = value    
+          elif option in ('-o', '--object'):
+              objectType = value        
+          elif option in ('-v', '--verbose'):
+             global _verbose
+             _verbose = True
+             
+       if tsvFilePath == None or jsonFilePath == None or colHeaderFilePath == None or objectType == None:
+           raise _Usage(_helpMessage)      
+       
+       theMagic = magic.Magic(mime_encoding=True)
+             
+       with open(colHeaderFilePath) as headers:
+           cols = headers.read().splitlines()
+           verboseLog(cols)
+           
+       with open (tsvFilePath) as tsv:
+            for line in csv.reader(tsv, dialect="excel-tab"):
+                jsonStruct={}
+                diff = len(cols)-len(line)
+                if diff > 0:
+                    verboseLog("Column Headers and Row Values Don't Match up: numCols: ["+len(cols)+"]: numRowValues: ["+len(line)+"]")
+        
+                for num in range(0, len(cols)-1):
+                    if ":" in cols[num] and diff > 0:
+                        diff = diff - 1
+                        continue                    
+                    
+                    if line[num] <> None and line[num].lstrip() <> '':
+                        encoding = None
+                        try:
+                            encoding = theMagic.from_buffer(line[num])
+                            val = line[num].decode(encoding).encode("utf-8")
+                        except magic.MagicException, err:
+                            verboseLog("Error detecting encoding for row val: ["+line[num]+"]: Message: "+str(err))
+                            val = line[num]                            
+                    else:
+                        val = line[num]
+                    
+                    jsonStruct[cols[num]] = val
+                    if "*" in cols[num]:
+                        jsonStruct["id"] = val    
+                
+                if not "id" in jsonStruct:
+                    # generate an id
+                    id = uuid.uuid4()
+                    jsonStruct["id"] = str(id)
+                            
+                jsonStructs.append(jsonStruct)
+        
+       jsonWrapper = {objectType : jsonStructs}
+       outFile = open(jsonFilePath, "wb")
+       verboseLog("Writing output file: ["+jsonFilePath+"]")
+       json.dump(jsonWrapper, outFile, encoding="utf-8")             
+
+   except _Usage, err:
+       print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
+       return 2
+
+if __name__ == "__main__":
+    sys.exit(main())

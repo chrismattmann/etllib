@@ -44,7 +44,7 @@ def writeDoc(theDoc, filePath):
         pass
 
 def cleanseImage(theDoc):
-    if "image" in theaDoc:
+    if "image" in theDoc:
         theDoc["image_id"] = theDoc["image"]["id"]
         theDoc["image_template_id"] = theDoc["image"]["template_id"]
         theDoc.pop("image", None)

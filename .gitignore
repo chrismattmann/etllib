@@ -2,3 +2,7 @@
 .project
 .settings
 .pydevproject
+.pyc
+*/*.pyc
+/etllib.egg-info
+/doc.txt

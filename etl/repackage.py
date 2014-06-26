@@ -91,7 +91,7 @@ def main(argv=None):
        f = open(jsonFile, 'r')
        jsonContents = f.read()
        jsonObjects = prepareDocs(jsonContents, objectType)
-       for obj in jsonObject:
+       for obj in jsonObjects:
         cleanseImage(obj)
         cleanseBody(obj)
         unravelStructs(obj)    
