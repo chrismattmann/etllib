@@ -15,6 +15,8 @@ repackageandpost
 	Combines repackage and posting to Solr without the need for an intermediate file.
 tsvtojson
     Takes an input TSV file and parses it with a set of column headers and outputs a JSON file.
+translatejson
+    Takes an input JSON file and a column header file and cred file and translates from source lang to dest lang using Bing's API and Apache Tika.
 ```
 
 For installation instructions, please see docs/INSTALL.txt.

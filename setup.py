@@ -79,6 +79,7 @@ setup(
             'repackage = etl.repackage:main',
             'repackageandpost = etl.repackageandpost:main',
             'tsvtojson = etl.tsvtojson:main',
+            'translatejson = etl.translatejson:main',
         ],
     }, 
     package_data = {
@@ -89,7 +90,7 @@ setup(
         'setuptools',
         'iso8601',
         'jcc',
-        'tika>=1.4',
+        'tika>=1.6',
         'python-magic'
     ],
     dependency_links=[

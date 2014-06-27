@@ -6,3 +6,5 @@
 */*.pyc
 /etllib.egg-info
 /doc.txt
+/build
+/dist
