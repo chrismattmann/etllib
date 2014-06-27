@@ -27,7 +27,7 @@
 # Things to update/fix:
 
 
-from etllib import prepareDocs, cleanseBody, cleanseImage, unravelStructs, prepareDocForSolr, postJsonDocToSolr
+from etllib import prepareDocs, cleanseBody, cleanseImage, unravelStructs, formatDate, prepareDocForSolr, postJsonDocToSolr
 import getopt
 import sys
 import os
@@ -104,6 +104,7 @@ def main(argv=None):
            for obj in jsonObjs:
                cleanseImage(obj)
                cleanseBody(obj)
+               formatDate(obj)
                unravelStructs(obj)    
                postString = prepareDocForSolr(obj, False)
                verboseLog(postString)

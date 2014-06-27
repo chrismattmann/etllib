@@ -80,6 +80,12 @@ def unravelStructs(theDoc):
                     _createOrAppendToList(theDoc, "countries_location_geo_type", country["location"]["geo"]["type"])
         theDoc.pop("countries", None)
         
+def formatDate(theDoc):
+    for key in theDoc.iterkeys():
+        if "date" in key.lower():
+            value = theDoc[key]
+            theDoc[key] = value+"T00:00:00.000Z"
+        
 
 def postJsonDocToSolr(solrUrl, data):
     print "POST "+solrUrl

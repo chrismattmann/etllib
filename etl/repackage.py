@@ -27,7 +27,7 @@
 import sys
 import os
 import getopt
-from etllib import cleanseImage, cleanseBody, unravelStructs, prepareDocs, writeDoc
+from etllib import cleanseImage, cleanseBody, unravelStructs, formatDate, prepareDocs, writeDoc
 
 _verbose = False
 _helpMessage = '''
@@ -94,6 +94,7 @@ def main(argv=None):
        for obj in jsonObjects:
         cleanseImage(obj)
         cleanseBody(obj)
+        formatDate(obj)
         unravelStructs(obj)    
         filePath = os.getcwd() + "/" + str(obj["id"])+".json"
         verboseLog("Writing json file: ["+filePath+"]")

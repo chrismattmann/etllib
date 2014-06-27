@@ -110,9 +110,9 @@ def main(argv=None):
                 jsonStruct={}
                 diff = len(cols)-len(line)
                 if diff > 0:
-                    verboseLog("Column Headers and Row Values Don't Match up: numCols: ["+len(cols)+"]: numRowValues: ["+len(line)+"]")
+                    verboseLog("Column Headers and Row Values Don't Match up: numCols: ["+str(len(cols))+"]: numRowValues: ["+str(len(line))+"]")
         
-                for num in range(0, len(cols)-1):
+                for num in range(0, len(cols)):
                     if ":" in cols[num] and diff > 0:
                         diff = diff - 1
                         continue                    
