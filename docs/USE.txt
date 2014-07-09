@@ -16,6 +16,13 @@ computer:
     The repackageandpost command combines repackage, and poster, and
     obviates the need to store the repackaged JSON doc as an intermediate file, and
     then repackages (keeps docs in memory) and then posts directly to Apache Solr.
+``tsvtojson`` command
+    Takes an input TSV file and parses it with a set of column headers and outputs a 
+    JSON file.
+``translatejson`` command
+    Takes an input JSON file and a column header file and cred file and translates from 
+    source lang to dest lang using Bing's API and Apache Tika.
+    
     
 ETLlib Library
     The ETLlib Library is a Python-based API for munging  data and
@@ -29,12 +36,14 @@ attention to the ETLlib library.
 Commands
 ========
 
-After installing the ETLlib package, three new commands are made available on
-your system, ``repackage`` and ``poster`` and ``repackageandpost``.  These 
-commands enable you to reformulate aggregate  JSON documents, cleanse their fields
-(which may contain UTF-8 or other weird encodings) using Apache Tika, and then to post those
-documents to Apache Solr. These were developed initially independently as python scripts
-that are wrapped using Apache OODT ETL workflows, but later Chris Mattmann <mattmann@apache.org>
+After installing the ETLlib package,  new commands are made available on
+your system, ``repackage`` and ``poster`` and ``repackageandpost`` and 
+``tsvtojson`` and ``translatejson`` .  These commands enable you to reformulate 
+aggregate  JSON documents, cleanse their fields (which may contain UTF-8 or other 
+weird encodings), convert from different formats (e.g., TSV to JSON), translate 
+fields within the documents using Apache Tika, and then to post those documents to Apache Solr. 
+These were developed initially independently as python scripts that are wrapped using 
+Apache OODT ETL workflows, but later Chris Mattmann <mattmann@apache.org>
 decided they would be useful as a installable python library.
 
 To use these commands from your interactive prompt, you just need to make sure
@@ -60,11 +69,11 @@ make these shells rebuild their caches by running the ``rehash`` command.
 Use from Shell Scripts
 ----------------------
 
-The ``repackage`` and ``poster`` and ``repackageandpost`` commands 
-may be used from shell scripts as well.  The only requirement for making these 
-commands available to shell scripts is the same as for interactive sessions:  
-the shell's PATH environment variable must include the directory that contains 
-the ``repackage`` and ``poster`` and ``repackageandpost`` commands.
+The ``repackage`` and ``poster`` and ``repackageandpost`` and ``tsvtojson`` and
+``translatejson`` commands  may be used from shell scripts as well.  The only 
+requirement for making these  commands available to shell scripts is the same as 
+for interactive sessions:  the shell's PATH environment variable must include the 
+directory that contains the commands.
 
 Here is a sample shell script that repackages a  Teams JSON file of 20 aggregate
 records, and outputs 20 individual Teams JSON files ::
@@ -82,8 +91,7 @@ the aggregate teams JSON files from the Kiva raw dataset and then hands
 each aggregate JSON file to the repackage script, which unravels those
 1234 teams JSON data files into 1234 * 20 = 24680 individual team JSON files.
 
-The ``poster`` command and ``repackageandpost`` command may also be 
-used from a shell script.  
+The rest of the commands may also be used from a shell script.  
 
 Some example working commands are:
 
@@ -92,13 +100,26 @@ Pipe a single  JSON journal entries file into the repackageandpost script::
 echo "/data/xdata/Kiva/raw/RAW__json_journalEntries_04Mar2013/365/191677_journalentries_pg1_retreived-2013_03_04_21_56.json" \
 | repackageandpost -u "http://localhost:8080/solr/journalentries/update/json?commit=true" -o journal_entries -v
 
+Take in an input TSV file named computrabajo-ve-20121108.tsv and turn it into a JSON file with a root object named employmentjobs using the provided colheaders.txt file::
+
+tsvtojson -t data/staging/computrabajo-ve-20121108.tsv -j data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json -c conf/colheaders.txt -o employmentjobs
+
+Extract out the ~9000 or so jobs present in computrabajo-ve-20121108.json under the "employmentjobs" key::
+
+repackage -j ../../../../../data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json -o employmentjobs
+
+Translate the fields defined in translate.cols in the JSON file named 648c3a4a-22d1-4a43-b0da-9c8e45716e40.json from spanish ("es") to english ("en") and output the translated JSON named 648c3a4a-22d1-4a43-b0da-9c8e45716e40-t.json, using Bing and Apache Tika and the provided credentials:: 
+
+translatejson -i data/jobs/repackager/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716e40.json -j data/jobs/translate/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716e40-t.json -c src/tika-python/lib/translate.cols -p src/tika-python/lib/translator.creds -f es -t en -v
+
+
 ETLlib Library
 ===========
 
 The ETLlib Library is a Python-based application programming interface (API) for
-munging and processing  JSON data for ETL and analytics. In fact, the three commands 
-``poster`` and ``repackage`` and ``repackageandpost`` are implemented using 
-the ETLlib Library.  If shell-script programming is not to your taste, and you
+munging and processing  JSON data for ETL and analytics. In fact, the commands 
+``poster`` and ``repackage`` and ``repackageandpost`` and ``tsvtojson`` and ``translatejson`` 
+are implemented using the ETLlib Library.  If shell-script programming is not to your taste, and you
 know Python, then using the ETLlib Library may be right for you.
 
 
