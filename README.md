@@ -28,7 +28,9 @@ With Tika
 The recommended way to install ETLlib is with `pip`. For Tika support you will need to install [tika-python](https://github.com/chrismattmann/tika-python) and its dependencies first. Once you have that installed, you can install ETLlib with Tika support using the following command:
 
 ```
-pip install git+https://github.com/chrismattmann/etllib.git[Tika]
+git clone https://github.com/chrismattmann/etllib.git
+cd etllib
+pip install -e .[Tika]
 ```
 
 Without Tika
