@@ -111,9 +111,10 @@ def main(argv=None):
            jsonData = jsonFile.read()
            jsonStruct = json.loads(jsonData)
 
-       translator = tika.MicrosoftTranslator()
-       translator.setId(creds[0])
-       translator.setSecret(creds[1])
+       mtranslator = tika.MicrosoftTranslator()
+       mtranslator.setId(creds[0])
+       mtranslator.setSecret(creds[1])
+       translator = tika.CachedTranslator(mtranslator)
        
        for col in cols:
            if col in jsonStruct:
