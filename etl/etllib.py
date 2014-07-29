@@ -22,12 +22,17 @@
 # Description: A suite of functions for munging data in preparation
 # for loading into Solr using Tika and other goodies (JSON parsing, etc.)
 
-import tika
-from tika import parser
-tika.initVM()
 import urllib2
 urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 import json
+
+try:
+    import tika
+    from tika import parser
+    tika.initVM()
+    tika_support = True
+except ImportError:
+    tika_support = False
 
 def prepareDocs(jsondata, objectType):
     jsondoc = json.loads(jsondata)
@@ -50,6 +55,14 @@ def cleanseImage(theDoc):
         theDoc.pop("image", None)
         
 def cleanseBody(theDoc):
+    if not tika_support:
+        print (
+            "cleanseBody requires Tika to be installed."
+            "Please check the documentation on how to install "
+            "ETLlib with Tika support."
+        )
+        raise RuntimeError("Tika support not installed.")
+
     if "body" in theDoc:
         content = "<html>".encode('utf-8')+theDoc["body"].encode('utf-8')+"</html>".encode('utf-8')
         parsed = parser.from_buffer(content)
