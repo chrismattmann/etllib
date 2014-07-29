@@ -33,11 +33,12 @@ import sys
 import getopt
 import magic
 import uuid
+import os
 
 
 _verbose = False
 _helpMessage = '''
-Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file]
+Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field]
 
 Options:
 -t tsv file, --tsv=file
@@ -48,6 +49,8 @@ Options:
     Use the provided column headers to parse the TSV and to name fields in the JSON.
 -o object type --object=type
     Wrap the list of objects for each row in the TSV file in the named JSON object type.    
+-u unique field --unique=field
+    Identifies a unique field per record in the TSV so that duplicate JSON files are not created.
 -v, --verbose
     Work verbosely rather than silently.
 '''
@@ -55,6 +58,12 @@ Options:
 def verboseLog(message):
     if _verbose:
         print >>sys.stderr, message
+        
+def checkFilePath(filePath, checkPath=True):
+    if checkPath:
+        return filePath <> None and os.path.isfile(filePath)
+    else:
+        return filePath <> None and not os.path.exists(filePath)
 
 class _Usage(Exception):
     '''An error for problems with arguments on the command line.'''
@@ -67,7 +76,7 @@ def main(argv=None):
 
    try:
        try:
-          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:',['help', 'verbose', 'tsv=','json=','cols=','object='])
+          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:u:',['help', 'verbose', 'tsv=','json=','cols=','object=', 'unique='])
        except getopt.error, msg:
          raise _Usage(msg)    
      
@@ -80,6 +89,7 @@ def main(argv=None):
        jsonFilePath = None
        tsvFilePath = None
        objectType = None
+       uniqueField = None
       
        for option, value in opts:
           if option in ('-h', '--help'):
@@ -91,12 +101,14 @@ def main(argv=None):
           elif option in ('-c', '--cols'):
              colHeaderFilePath = value    
           elif option in ('-o', '--object'):
-              objectType = value        
+              objectType = value     
+          elif option in ('-u', '--unique'):
+              uniqueField = value   
           elif option in ('-v', '--verbose'):
              global _verbose
              _verbose = True
              
-       if tsvFilePath == None or jsonFilePath == None or colHeaderFilePath == None or objectType == None:
+       if not checkFilePath(tsvFilePath) or not checkFilePath(jsonFilePath, False) or not checkFilePath(colHeaderFilePath) or objectType == None:
            raise _Usage(_helpMessage)      
        
        theMagic = magic.Magic(mime_encoding=True)
@@ -106,6 +118,9 @@ def main(argv=None):
            verboseLog(cols)
            
        with open (tsvFilePath) as tsv:
+            if uniqueField <> None:
+                fieldCache = {}
+                
             for line in csv.reader(tsv, dialect="excel-tab"):
                 jsonStruct={}
                 diff = len(cols)-len(line)
@@ -137,7 +152,18 @@ def main(argv=None):
                     id = uuid.uuid4()
                     jsonStruct["id"] = str(id)
                             
-                jsonStructs.append(jsonStruct)
+                if uniqueField <> None:
+                    if uniqueField in jsonStruct:
+                        if not jsonStruct[uniqueField] in fieldCache:
+                            jsonStructs.append(jsonStruct)
+                            fieldCache[jsonStruct[uniqueField]] = "yes"
+                            jsonStructs.append(jsonStruct)
+                        else:
+                            verboseLog("Skipping adding record: ["+jsonStruct["id"]+"]: duplicate unique field: ["+jsonStruct[uniqueField]+"]")
+                    else:
+                        verboseLog("JSON struct with id: ["+jsonStruct["id"]+"] does not have unique field: ["+uniqueField+"]: adding it anyways.")
+                else:
+                    jsonStructs.append(jsonStruct)
         
        jsonWrapper = {objectType : jsonStructs}
        outFile = open(jsonFilePath, "wb")
