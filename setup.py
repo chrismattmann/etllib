@@ -62,7 +62,7 @@ _classifiers = [
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-long_description = _descr + read('docs', 'INSTALL.txt') + '\n' + read('docs', 'USE.txt') + '\n' + read('docs', 'HISTORY.txt') + '\n'
+long_description = _descr + read('docs', 'USE.txt') + '\n' + read('docs', 'HISTORY.txt') + '\n'
 open('doc.txt', 'w').write(long_description)
 
 setup(
