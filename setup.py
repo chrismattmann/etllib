@@ -18,9 +18,18 @@
 # 
 # $Id$
 
-import ez_setup, os.path
-ez_setup.use_setuptools()
-from setuptools import setup, find_packages
+import os.path
+
+try:
+    from ez_setup import use_setuptools
+    use_setuptools()
+except ImportError:
+    pass
+
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from distutils.core import setup, find_packages
 
 version = '0.0.0'
 
