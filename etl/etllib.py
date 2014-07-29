@@ -120,6 +120,18 @@ def prepareDocForSolr(jsondata, unmarshall=True):
     jsonwrapper = {"add": {"boost": boost, "doc": jsondoc}}
     return json.dumps(jsonwrapper)
 
+def prepareDocsForSolr(jsondata, unmarshall=True):
+    jsondocs = json.loads(jsondata) if unmarshall else jsondata
+    docs = []
+    for doc in jsondocs:
+        if "boost" in doc:
+            boost = doc["boost"]
+        else:
+            boost = 1.0
+        docs.append({"add": {"boost": boost, "doc": doc}})
+
+    return json.dumps(docs)
+
 def _createOrAppendToList(doc, key, val):
     if key in doc:
         doc[key].append(val)
