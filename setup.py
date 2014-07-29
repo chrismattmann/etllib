@@ -85,10 +85,10 @@ setup(
     entry_points={
         'console_scripts': [
             'poster = etl.poster:main',
-            'repackage = etl.repackage:main',
-            'repackageandpost = etl.repackageandpost:main',
+            'repackage = etl.repackage:main [Tika]',
+            'repackageandpost = etl.repackageandpost:main [Tika]',
             'tsvtojson = etl.tsvtojson:main',
-            'translatejson = etl.translatejson:main',
+            'translatejson = etl.translatejson:main [Tika]',
         ],
     }, 
     package_data = {
@@ -98,10 +98,11 @@ setup(
     install_requires=[
         'setuptools',
         'iso8601',
-        'jcc',
-        'tika>=1.6',
         'python-magic'
     ],
+    extras_requires={
+        'Tika': ['jcc', 'tika>=1.6']
+    },
     dependency_links=[
         'https://github.com/chrismattmann/python-tika-with-deps/zipball/master#egg=tika-1.4'
     ],
