@@ -102,7 +102,6 @@ def formatDate(theDoc):
 
 def postJsonDocToSolr(solrUrl, data):
     print "POST "+solrUrl
-    #print "posting: "+data
     req = urllib2.Request(solrUrl, data, {'Content-Type': 'application/json'})
     try:
         f = urllib2.urlopen(req)
