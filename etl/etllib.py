@@ -111,18 +111,18 @@ def postJsonDocToSolr(solrUrl, data):
         print "HTTP error(%s)" % (err)
 
 
-def prepareDocForSolr(jsondata, unmarshall=True):
-    jsondoc = json.loads(jsondata) if unmarshall else jsondata
+def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
+    jsondoc = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
     if "boost" in jsondoc:
         boost = jsondoc["boost"]
     else:
         boost = 1.0
     jsonwrapper = {"add": {"boost": boost, "doc": jsondoc}}
-    return json.dumps(jsonwrapper)
+    return json.dumps(jsonwrapper, encoding=encoding)
 
-def prepareDocsForSolr(jsondata, unmarshall=True):
-    jsondocs = json.loads(jsondata) if unmarshall else jsondata
-    return json.dumps(jsondocs)
+def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
+    jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
+    return json.dumps(jsondocs, encoding=encoding)
 
 def _createOrAppendToList(doc, key, val):
     if key in doc:
