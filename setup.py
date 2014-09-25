@@ -99,7 +99,7 @@ setup(
         'setuptools',
         'iso8601',
         'python-magic'
-    ],
+    ], 
     extras_require={
         'Tika': ['jcc', 'tika>=1.6']
     },
