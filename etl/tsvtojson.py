@@ -137,9 +137,13 @@ def main(argv=None):
                         try:
                             encoding = theMagic.from_buffer(line[num])
                             val = line[num].decode(encoding).encode("utf-8")
+
                         except magic.MagicException, err:
                             verboseLog("Error detecting encoding for row val: ["+line[num]+"]: Message: "+str(err))
-                            val = line[num]                            
+                            val = line[num]
+                        except LookupError, err:
+                            verboseLog("unknown encoding: binary:"+line[num]+":Message:"+str(err))
+                            val = line[num]
                     else:
                         val = line[num]
                     
