@@ -104,6 +104,6 @@ setup(
         'Tika': ['jcc', 'tika>=1.6']
     },
     dependency_links=[
-        'https://github.com/chrismattmann/tika-python/zipball/master#egg=1.6'
+        'git+https://git@github.com/chrismattmann/tika-python.git#egg=tika-1.6'
     ],
 )
