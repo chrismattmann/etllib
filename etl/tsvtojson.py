@@ -37,8 +37,10 @@ import os
 
 
 _verbose = False
+_guessEncoding = False
+_theMagic = magic.Magic(mime_encoding=True)
 _helpMessage = '''
-Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field]
+Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field][-e encoding file]
 
 Options:
 -t tsv file, --tsv=file
@@ -53,6 +55,8 @@ Options:
     Identifies a unique field per record in the TSV so that duplicate JSON files are not created.
 -v, --verbose
     Work verbosely rather than silently.
+-e, --encoding
+    Use the provided encodings to speed up parsing
 '''
 
 def verboseLog(message):
@@ -76,7 +80,7 @@ def main(argv=None):
 
    try:
        try:
-          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:u:',['help', 'verbose', 'tsv=','json=','cols=','object=', 'unique='])
+          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:u:e:',['help', 'verbose', 'tsv=','json=','cols=','object=', 'unique=', 'encoding='])
        except getopt.error, msg:
          raise _Usage(msg)    
      
@@ -85,11 +89,13 @@ def main(argv=None):
          
        jsonStructs = []
        cols = []
+       encodings = []
        colHeaderFilePath = None
        jsonFilePath = None
        tsvFilePath = None
        objectType = None
        uniqueField = None
+       encodingFilePath = None
       
        for option, value in opts:
           if option in ('-h', '--help'):
@@ -107,11 +113,20 @@ def main(argv=None):
           elif option in ('-v', '--verbose'):
              global _verbose
              _verbose = True
+          elif option in ('-e', '--encoding'):
+              encodingFilePath = value
              
        if not checkFilePath(tsvFilePath) or not checkFilePath(jsonFilePath, False) or not checkFilePath(colHeaderFilePath) or objectType == None:
            raise _Usage(_helpMessage)      
-       
-       theMagic = magic.Magic(mime_encoding=True)
+
+       _guessEncoding = encodingFilePath <> None
+       if _guessEncoding:
+           if checkFilePath(encodingFilePath):
+               with open(encodingFilePath) as encodingFile:
+                   encodings = encodingFile.read().splitlines()
+                   verboseLog(encodings)
+           else:
+               raise _Usage("Encoding file doesn't exist")           
              
        with open(colHeaderFilePath) as headers:
            cols = headers.read().splitlines()
@@ -133,19 +148,20 @@ def main(argv=None):
                         continue                    
                     
                     if line[num] <> None and line[num].lstrip() <> '':
-                        encoding = None
-                        try:
-                            encoding = theMagic.from_buffer(line[num])
-                            val = line[num].decode(encoding).encode("utf-8")
-
-                        except magic.MagicException, err:
-                            verboseLog("Error detecting encoding for row val: ["+line[num]+"]: Message: "+str(err))
-                            val = line[num]
-                        except LookupError, err:
-                            verboseLog("unknown encoding: binary:"+line[num]+":Message:"+str(err))
-                            val = line[num]
+                        if _guessEncoding:
+                            for encoding in encodings:
+                                try:
+                                    val = line[num].decode(encoding).encode("utf-8")
+                                except UnicodeDecodeError:
+                                    if encoding <> encodings[-1]:
+                                        continue
+                                    val = convertToUTF8(line[num])
+                                else:
+                                    break
+                        else:
+                            val = convertToUTF8(line[num])
                     else:
-                        val = line[num]
+                        val = ''
                     
                     jsonStruct[cols[num]] = val
                     if "*" in cols[num]:
@@ -177,6 +193,19 @@ def main(argv=None):
    except _Usage, err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
+
+def convertToUTF8(src):
+    try:
+        encoding = _theMagic.from_buffer(src)
+        val = src.decode(encoding).encode("utf-8")
+    except magic.MagicException, err:
+        verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
+        val = src
+    except LookupError, err:
+        verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
+        val = src
+    finally:
+        return val
 
 if __name__ == "__main__":
     sys.exit(main())
