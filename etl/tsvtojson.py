@@ -37,6 +37,8 @@ import os
 
 
 _verbose = False
+_guessEncoding = False
+_theMagic = magic.Magic(mime_encoding=True)
 _helpMessage = '''
 Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field][-e encoding file]
 
@@ -117,18 +119,18 @@ def main(argv=None):
        if not checkFilePath(tsvFilePath) or not checkFilePath(jsonFilePath, False) or not checkFilePath(colHeaderFilePath) or objectType == None:
            raise _Usage(_helpMessage)      
 
-       if encodingFilePath and not checkFilePath(encodingFilePath):
-           raise _Usage("Encoding file doesn't exist")
-       
-       theMagic = magic.Magic(mime_encoding=True)
+       _guessEncoding = encodingFilePath <> None
+       if _guessEncoding:
+           if checkFilePath(encodingFilePath):
+               with open(encodingFilePath) as encodingFile:
+                   encodings = encodingFile.read().splitlines()
+                   verboseLog(encodings)
+           else:
+               raise _Usage("Encoding file doesn't exist")           
              
        with open(colHeaderFilePath) as headers:
            cols = headers.read().splitlines()
            verboseLog(cols)
-
-       with open(encodingFilePath) as encodingFile:
-           encodings = encodingFile.read().splitlines()
-           verboseLog(encodings)
            
        with open (tsvFilePath) as tsv:
             if uniqueField <> None:
@@ -146,28 +148,18 @@ def main(argv=None):
                         continue                    
                     
                     if line[num] <> None and line[num].lstrip() <> '':
-                        for encoding in encodings:
-                            try:
-                                val = line[num].decode(encoding).encode("utf-8")
-                            except UnicodeDecodeError:
-                                if encoding <> encodings[-1]:
-                                    continue
+                        if _guessEncoding:
+                            for encoding in encodings:
                                 try:
-                                    encoding = theMagic.from_buffer(line[num])
                                     val = line[num].decode(encoding).encode("utf-8")
-                                    verboseLog("Decode using "+encoding+" for row val: ["+line[num]+"]")
-                                except magic.MagicException, err:
-                                    verboseLog("Error detecting encoding for row val: ["+line[num]+"]: Message: "+str(err))
-                                    val = line[num]
+                                except UnicodeDecodeError:
+                                    if encoding <> encodings[-1]:
+                                        continue
+                                    val = convertToUTF8(line[num])
+                                else:
                                     break
-                                except LookupError, err:
-                                    verboseLog("unknown encoding: binary:"+line[num]+":Message:"+str(err))
-                                    val = line[num]
-                                finally:
-                                    break
-                            else:
-                                verboseLog("Decodoed with "+encoding)
-                                break
+                        else:
+                            val = convertToUTF8(line[num])
                     else:
                         val = ''
                     
@@ -202,5 +194,15 @@ def main(argv=None):
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
 
+def convertToUTF8(src):
+    try:
+        encoding = _theMagic.from_buffer(src)
+        val = src.decode(encoding).encode("utf-8")
+    except magic.MagicException, err:
+        verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
+        val = src
+    except LookupError, err:
+        verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
+        val = src
 if __name__ == "__main__":
     sys.exit(main())
