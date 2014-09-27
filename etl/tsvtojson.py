@@ -204,5 +204,8 @@ def convertToUTF8(src):
     except LookupError, err:
         verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
         val = src
+    finally:
+        return val
+
 if __name__ == "__main__":
     sys.exit(main())
