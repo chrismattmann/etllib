@@ -25,21 +25,29 @@ ETLlib can be installed with or without Tika support. Please check the relevant 
 
 With Tika
 ---
-The recommended way to install ETLlib is with `pip`. For Tika support you will need to install [tika-python](https://github.com/chrismattmann/tika-python) and its dependencies first. Once you have that installed, you can install ETLlib with Tika support using the following command:
+For Tika support you will need to install [tika-python](https://github.com/chrismattmann/tika-python) and its dependencies first. Once you have that installed, you can install ETLlib with Tika support using the following commands:
 
 ```
 git clone https://github.com/chrismattmann/etllib.git
 cd etllib
-pip install -e .[Tika]
+python bootstrap.py
+bin/buildout install with-tika
 ```
+
+The `bin` directory will be populated with the various command-line tools.
+
 
 Without Tika
 ---
-The recommended way to install ETLlib is with `pip`. To install without Tika support simply run the following command.
+To install without Tika support simply run the following commands:
 
 ```
-pip install git+https://github.com/chrismattmann/etllib.git
+python bootstrap.py
+bin/buildout install without-tika
 ```
+
+The `bin` directory will be populated with the various command-line tools.
+
 
 License
 ====
