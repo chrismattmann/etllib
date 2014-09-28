@@ -8,3 +8,7 @@
 /doc.txt
 /build
 /dist
+.*.cfg
+bin
+develop-eggs
+parts
