@@ -168,7 +168,8 @@ def main(argv=None):
        jsonWrapper = {objectType : jsonStructs}
        outFile = open(jsonFilePath, "wb")
        verboseLog("Writing output file: ["+jsonFilePath+"]")
-       json.dump(jsonWrapper, outFile, encoding="utf-8")             
+       json.dump(jsonWrapper, outFile, encoding="utf-8")
+       outFile.close()             
 
    except _Usage, err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
