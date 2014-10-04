@@ -103,7 +103,4 @@ setup(
     extras_require={
         'Tika': ['jcc', 'tika>=1.6']
     },
-    dependency_links=[
-        'git+https://git@github.com/chrismattmann/tika-python.git#egg=tika-1.6'
-    ],
 )
