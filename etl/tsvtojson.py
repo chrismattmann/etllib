@@ -177,7 +177,6 @@ def main(argv=None):
                         if not jsonStruct[uniqueField] in fieldCache:
                             jsonStructs.append(jsonStruct)
                             fieldCache[jsonStruct[uniqueField]] = "yes"
-                            jsonStructs.append(jsonStruct)
                         else:
                             verboseLog("Skipping adding record: ["+jsonStruct["id"]+"]: duplicate unique field: ["+jsonStruct[uniqueField]+"]")
                     else:
