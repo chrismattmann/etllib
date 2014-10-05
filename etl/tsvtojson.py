@@ -115,9 +115,18 @@ def main(argv=None):
              _verbose = True
           elif option in ('-e', '--encoding'):
               encodingFilePath = value
-             
-       if not checkFilePath(tsvFilePath) or not checkFilePath(jsonFilePath, False) or not checkFilePath(colHeaderFilePath) or objectType == None:
-           raise _Usage(_helpMessage)      
+      
+       errorString = []
+       if not checkFilePath(tsvFilePath):
+          errorString.append("Error: wrong/missing tsvFilePath")            
+       if not checkFilePath(jsonFilePath, False):
+          errorString.append("Error: Json file path is wrong/missing or Json File already exists")
+       if not checkFilePath(colHeaderFilePath):
+          errorString.append("Error: wrong/missing column headers")
+       if objectType == None:
+           errorString.append("Error: None object type passed")
+       if len(errorString) > 0:
+          raise _Usage(_helpMessage + '\n' + '\n'.join(errorString)) 
 
        _guessEncoding = encodingFilePath <> None
        if _guessEncoding:
