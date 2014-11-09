@@ -93,13 +93,22 @@ def unravelStructs(theDoc):
                     _createOrAppendToList(theDoc, "countries_location_geo_type", country["location"]["geo"]["type"])
         theDoc.pop("countries", None)
         
+def requiresDateFormating(dateString):
+    if 'T' not in dateString:
+        if  re.search('^\d{4}-\d{2}-\d{2}$', dateString) == None:
+            raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
+        return True
+    if  re.search('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
+        raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
+    return False
+
 def formatDate(theDoc):
     for key in theDoc.iterkeys():
         if "date" in key.lower():
             value = theDoc[key]
-            theDoc[key] = value+"T00:00:00.000Z"
+            if requiresDateFormating(value):
+                theDoc[key] = value+"T00:00:00.000Z"
         
-
 def postJsonDocToSolr(solrUrl, data):
     print "POST "+solrUrl
     req = urllib2.Request(solrUrl, data, {'Content-Type': 'application/json'})
