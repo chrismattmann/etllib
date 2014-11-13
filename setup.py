@@ -31,7 +31,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-version = '0.0.0'
+version = '0.0.1'
 
 _descr = u'''**********
 etllib
