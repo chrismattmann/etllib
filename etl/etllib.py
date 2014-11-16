@@ -34,6 +34,9 @@ try:
 except ImportError:
     tika_support = False
 
+import magic
+_theMagic = magic.Magic(mime_encoding=True)
+
 def prepareDocs(jsondata, objectType):
     jsondoc = json.loads(jsondata)
     return jsondoc[objectType]
@@ -72,7 +75,38 @@ def cleanseBody(theDoc):
             else:
                 theDoc["tika_"+key] = val
         theDoc["body"] = parsed["content"]
-        
+
+
+def readEncodedVal(line, colnum, encodings=None):
+    val = None
+    if encodings != None:
+        for encoding in encodings:
+            try:
+                val = line[colnum].decode(encoding).encode("utf-8")
+            except UnicodeDecodeError:
+                if encoding != encodings[-1]:
+                    continue
+                val = convertToUTF8(line[colnum])
+            else:
+                break
+    else:
+        val = convertToUTF8(line[colnum])
+    return val
+
+
+def convertToUTF8(src):
+    try:
+        encoding = _theMagic.from_buffer(src)
+        val = src.decode(encoding).encode("utf-8")
+    except magic.MagicException, err:
+        verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
+        val = src
+    except LookupError, err:
+        verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
+        val = src
+    finally:
+        return val
+
 
 def unravelStructs(theDoc):
     if "countries" in theDoc:
