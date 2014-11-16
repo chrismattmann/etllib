@@ -40,7 +40,7 @@ _verbose = False
 _guessEncoding = False
 _theMagic = magic.Magic(mime_encoding=True)
 _helpMessage = '''
-Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field][-e encoding file]
+Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field] [-e encoding file]
 
 Options:
 -t tsv file, --tsv=file
