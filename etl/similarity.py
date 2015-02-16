@@ -59,18 +59,14 @@ def main(argv = None):
 		for option, value in opts:
 			if option in ('-h', '--help'):
 				raise _Usage(_helpMessage)
-
+			elif option in ('-c', '--file'):
+				first_compare_file = value.split(',')[0]
+				second_compare_file = value.split(',')[1]
 			elif option in ('-f', '--directory'):
 				dirFile = value
-
-			elif option in ('-c', '--file'):
-				first_compare_file = value.split(' ')[0]
-				second_compare_file = value.split(' ')[1]
-
 			elif option in ('-v', '--verbose'):
 				global _verbose
 				_verbose = True
-
 
 		union_feature_names = set()
 		file_parsed_data = {}
@@ -129,8 +125,11 @@ def main(argv = None):
 		
 		print "Resemblance:\n"
 		for tuple in sorted_resemblance_scores:
-			print tuple[0]+","+str(tuple[1])+"\t"
-	
+			print os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1])+"\t"
+		with open("similarity-scores.txt", "w") as f:
+			f.write("Resemblance : \n")
+			for tuple in sorted_resemblance_scores:
+				f.write(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1])+"\n")
 
 	except _Usage, err:
 		print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
