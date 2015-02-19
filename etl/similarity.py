@@ -44,6 +44,14 @@ def main(argv = None):
 		argv = sys.argv
 
 
+	#extract file names from command line
+	if ('-c' or '--file') in argv:
+		if '-c' in argv :
+			index_of_file_option = argv.index('-c')
+		else :
+			index_of_file_option = argv.index('--file')
+		compare_file_name = argv[index_of_file_option+1 : ]
+
 	try:
 		try:
 			opts, args = getopt.getopt(argv[1:], 'hvf:c:', ['help', 'verbose', 'directory=', 'file=' ])
@@ -59,9 +67,11 @@ def main(argv = None):
 		for option, value in opts:
 			if option in ('-h', '--help'):
 				raise _Usage(_helpMessage)
+
 			elif option in ('-c', '--file'):
-				first_compare_file = value.split(',')[0]
-				second_compare_file = value.split(',')[1]
+				first_compare_file = compare_file_name[0]
+				second_compare_file = compare_file_name[1]
+
 			elif option in ('-f', '--directory'):
 				dirFile = value
 			elif option in ('-v', '--verbose'):
