@@ -25,6 +25,8 @@
 import urllib2
 urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 import json
+import os
+import operator
 
 try:
     import tika
@@ -166,6 +168,79 @@ def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
     return json.dumps(jsondocs, encoding=encoding)
 
+
+
+def compareKeySimilarity ( fileDir, encoding = 'utf-8') :
+
+    union_feature_names = set()
+    file_parsed_data = {}
+    resemblance_scores = {}
+
+    for filename in fileDir:
+        parsedData = parser.from_file(filename)
+        file_parsed_data[filename] = parsedData["metadata"]
+        union_feature_names = union_feature_names | set(parsedData["metadata"].keys())
+
+    total_num_features = len(union_feature_names)
+
+    for filename in file_parsed_data.keys():
+        overlap = {}
+        overlap = set(file_parsed_data[filename].keys()) & set(union_feature_names) 
+        resemblance_scores[filename] = float(len(overlap))/total_num_features
+
+    sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
+
+    return sorted_resemblance_scores, file_parsed_data
+
+def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
+    union_feature_names = set()
+    file_parsed_data = {}
+    resemblance_scores = {}
+
+    for filename in fileDir:
+        file_parsed = []
+        # first compute the union of all features
+        parsedData = parser.from_file(filename)
+        #get key : value of metadata
+        for key in parsedData["metadata"].keys() :
+            file_parsed.append(str(key.strip() + ": " + parsedData["metadata"].get(key).strip()))
+
+
+        file_parsed_data[filename] = set(file_parsed)
+        union_feature_names = union_feature_names | set(file_parsed_data[filename])
+
+    total_num_features = len(union_feature_names)
+    
+    for filename in file_parsed_data.keys():
+        overlap = {}
+        overlap = file_parsed_data[filename] & set(union_feature_names) 
+        resemblance_scores[filename] = float(len(overlap))/total_num_features
+
+    sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted_resemblance_scores, file_parsed_data
+
+def convertKeyUnicode( fileDict, key = None) :
+    fileUTFDict = {}
+    for key in fileDict.keys():
+        if isinstance(key, unicode) :
+            key = str(key).strip(" ")
+        value = fileDict.get(key)
+        if isinstance(value, unicode) :
+            value = str(value).strip(" ")
+        fileUTFDict[key] = value
+        
+    return str(fileUTFDict)
+
+
+def convertValueUnicode( fileDict ) :
+    fileUTFDict = []
+    for record in fileDict:
+        if isinstance(record, unicode) :
+            record = str(record).strip(" ")
+        fileUTFDict.append(record)
+        
+    return str(fileUTFDict)
+    
 def _createOrAppendToList(doc, key, val):
     if key in doc:
         doc[key].append(val)
