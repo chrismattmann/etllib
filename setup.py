@@ -36,13 +36,10 @@ version = '0.0.2'
 _descr = u'''**********
 etllib
 ***************
-
 .. contents::
-
 ETLlib provides functionality for munging through and repackaging
 JSON, TSV and other data for preparation and submission (ETL) to Apache Solr. The 
 library takes advantage of Apache Tika, and is callable from Apache OODT.
-
 '''
 _keywords = 'xdata darpa etl tika solr oodt jpl'
 _classifiers = [
@@ -89,6 +86,7 @@ setup(
             'repackageandpost = etl.repackageandpost:main [Tika]',
             'tsvtojson = etl.tsvtojson:main',
             'translatejson = etl.translatejson:main [Tika]',
+            'generalTikaImageSimilarity = etl.generalTikaImageSimilarity:main[Tika]',
         ],
     }, 
     package_data = {
