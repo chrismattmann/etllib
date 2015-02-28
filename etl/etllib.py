@@ -240,7 +240,49 @@ def convertValueUnicode( fileDict ) :
         fileUTFDict.append(record)
         
     return str(fileUTFDict)
-    
+
+def generateCluster( similarity_score, threshold = 0.01) :
+    prior = None
+    clusters = []
+    clusterCount = 0
+    cluster = {"name":"cluster"+str(clusterCount)}
+    clusterData = []
+    for line in similarity_score:
+        featureDataList = line.split(",",2) # file name,score, metadata
+        if len(featureDataList) != 3:
+            continue
+
+        if prior != None:
+            diff = prior-float(featureDataList[1])
+        else:
+            diff = -1.0
+
+        # cleanse the \n
+        featureDataList[1] = featureDataList[1].strip()
+        featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "metadata" : featureDataList[2]}
+
+        if diff > threshold:
+            cluster["children"] = clusterData
+            clusters.append(cluster)
+            clusterCount = clusterCount + 1
+            cluster = {"name":"cluster"+str(clusterCount)}
+            clusterData = []
+            clusterData.append(featureData)
+            prior = float(featureDataList[1])
+        else:
+            clusterData.append(featureData)
+            prior = float(featureDataList[1])
+            #print featureDataList[2]
+
+    #add the last cluster into clusters
+    cluster["children"] = clusterData
+    clusters.append(cluster)
+    clusterCount = clusterCount + 1
+    cluster = {"name":"cluster"+str(clusterCount)}
+
+    clusterStruct = {"name":"clusters", "children":clusters}
+    return clusterStruct
+
 def _createOrAppendToList(doc, key, val):
     if key in doc:
         doc[key].append(val)

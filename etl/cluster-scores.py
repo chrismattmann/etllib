@@ -21,7 +21,7 @@ import json
 import getopt
 import sys
 import os
-
+from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, convertValueUnicode, generateCluster
 
 _verbose = False
 _helpMessage = '''
@@ -58,20 +58,26 @@ def main(argv = None):
 
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'f:t:o:vh', ['directory=', 'threshold=', 'output=', 'verbose', 'help'])
+            opts, args = getopt.getopt(argv[1:], 'f:t:o:vh', ['file=', 'threshold=', 'output=', 'verbose', 'help'])
         except getopt.error, msg:
             raise _Usage(msg)
 
         if len(opts) ==0:
             raise _Usage(_helpMessage)
 
-        dirFile = ""
-        threshold = None
+        threshold = 0.0
         output_dir = ""
+        filenames = []
+        filename_list = []
         for option, value in opts:
-
-            if option in ('-f', '--directory') :
-                dirFile = value
+            if option in ('-f', '--file') :
+                index = argv.index('-f')
+                filenames_str= str(argv[1+index : ])
+                last_index = filenames_str.find("-")
+                if last_index <> -1:
+                    filenames = filenames_str[1 : last_index].split(',')
+                else:
+                    filenames = filenames_str[1: len(filenames_str)-1].split(',')
             elif option in ('-t', '--threshold') :
                 threshold = float(value)
             elif option in ('-o', '--output') :
@@ -82,54 +88,29 @@ def main(argv = None):
                 global _verbose
                 _verbose = True
 
+        if len(filenames) <2 :
+            raise _Usage("you need to type in at leastcompare files")
 
-        if not os.path.isfile(dirFile) :
-            raise _Usage("file does not exists!")
+        #format the filenames
+        filenames = [x.strip() for x in filenames]
+        filenames = [filenames[k].strip('\'\n') for k in range(len(filenames))]
 
-        else :
-            with open(dirFile, 'r') as f:
-                prior = None
-                clusters = []
-                clusterCount = 0
-                cluster = {"name":"cluster"+str(clusterCount)}
-                clusterData = []
-                for line in f:
-                    featureDataList = line.split(",",2) # file name,score, metadata
-                    if len(featureDataList) != 3:
-                        continue
+        for filename in filenames :
+            if not filename :
+                continue
+            if not os.path.isfile(filename) :
+                raise _Usage("not valid file")
+            filename_list.append(filename)
+        
+        similarity_score = []
+        sorted_resemblance_scores, file_parsed_data = compareKeySimilarity(filename_list)
+        for tuple in sorted_resemblance_scores:
+            similarity_score.append(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + convertKeyUnicode(file_parsed_data[tuple[0]])+'\n')
 
-                    if prior != None:
-                        diff = prior-float(featureDataList[1])
-                    else:
-                        diff = -1.0
-
-                    # cleanse the \n
-                    featureDataList[1] = featureDataList[1].strip()
-                    featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "metadata" : featureDataList[2]}
-
-                    if diff > threshold:
-                        cluster["children"] = clusterData
-                        clusters.append(cluster)
-                        clusterCount = clusterCount + 1
-                        cluster = {"name":"cluster"+str(clusterCount)}
-                        clusterData = []
-                        clusterData.append(featureData)
-                        prior = float(featureDataList[1])
-                    else:
-                        clusterData.append(featureData)
-                        prior = float(featureDataList[1])
-                        #print featureDataList[2]
-
-                #add the last cluster into clusters
-                cluster["children"] = clusterData
-                clusters.append(cluster)
-                clusterCount = clusterCount + 1
-                cluster = {"name":"cluster"+str(clusterCount)}
-
-            clusterStruct = {"name":"clusters", "children":clusters}
-            with open(os.path.join(output_dir, "clusters.json"), "w") as f:
-                f.write(json.dumps(clusterStruct, sort_keys=True, indent=4, separators=(',', ': ')))
-            #print json.dumps(clusterStruct, sort_keys=True, indent=4, separators=(',', ': '))
+        clusterStruct = generateCluster(similarity_score, threshold)
+        #output score in file
+        with open(os.path.join(output_dir, "clusters.json"), "w") as f:
+            f.write(json.dumps(clusterStruct, sort_keys=True, indent=4, separators=(',', ': ')))
 
     except _Usage, err:
         print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
