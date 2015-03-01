@@ -69,15 +69,14 @@ def main(argv = None):
         output_dir = ""
         filenames = []
         filename_list = []
-
-        if ('-v' or '--verbose') in argv :
+        if ('-v'in argv) or ('--verbose' in argv):
             global _verbose
             _verbose = Trues
 
-        elif ('-h' or '--_help') in argv:
+        elif ('-h'in argv) or ('--help' in argv):
             raise _Usage(_helpMessage) 
 
-        if ('-f' or '--file') in argv:
+        if ('-f'in argv) or ('--file' in argv):
             if '-f' in argv:
                 index = argv.index('-f')
             elif '--file' in argv:
@@ -89,13 +88,13 @@ def main(argv = None):
             else:
                 filenames = filenames_str[1: len(filenames_str)-1].split(',')
 
-        if ('-t' or '--threshold') in argv:
+        if ('-t'in argv) or ('--threshold' in argv):
             if '-t' in argv :
                 index = argv.index('-t')
             elif '--threshold' in argv:
                 index = argv.index('--threshold')
             threshold = float(argv[index+1])
-        if ('-o' or '--output') in argv :
+        if ('-o'in argv) or ('--output' in argv):
             if '-o' in argv :
                 index = argv.index('-o')
             elif '--output' in argv:
