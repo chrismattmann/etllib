@@ -69,27 +69,43 @@ def main(argv = None):
         output_dir = ""
         filenames = []
         filename_list = []
-        for option, value in opts:
-            if option in ('-f', '--file') :
+
+        if ('-v' or '--verbose') in argv :
+            global _verbose
+            _verbose = Trues
+
+        elif ('-h' or '--_help') in argv:
+            raise _Usage(_helpMessage) 
+
+        if ('-f' or '--file') in argv:
+            if '-f' in argv:
                 index = argv.index('-f')
-                filenames_str= str(argv[1+index : ])
-                last_index = filenames_str.find("-")
-                if last_index <> -1:
-                    filenames = filenames_str[1 : last_index].split(',')
-                else:
-                    filenames = filenames_str[1: len(filenames_str)-1].split(',')
-            elif option in ('-t', '--threshold') :
-                threshold = float(value)
-            elif option in ('-o', '--output') :
-                output_dir = value
-            elif option in ('-h', '--help') :
-                raise _Usage(_helpMessage)
-            elif option in ('-v', '--verbose') :
-                global _verbose
-                _verbose = True
+            elif '--file' in argv:
+                index = argv.index('--file')
+            filenames_str= str(argv[1+index : ])
+            last_index = filenames_str.find("-")
+            if last_index <> -1:
+                filenames = filenames_str[1 : last_index].split(',')
+            else:
+                filenames = filenames_str[1: len(filenames_str)-1].split(',')
+
+        if ('-t' or '--threshold') in argv:
+            if '-t' in argv :
+                index = argv.index('-t')
+            elif '--threshold' in argv:
+                index = argv.index('--threshold')
+            threshold = float(argv[index+1])
+        if ('-o' or '--output') in argv :
+            if '-o' in argv :
+                index = argv.index('-o')
+            elif '--output' in argv:
+                index = argv.index('--output')
+            output_dir = argv[1+index]
+
+        
 
         if len(filenames) <2 :
-            raise _Usage("you need to type in at leastcompare files")
+            raise _Usage("you need to type in at least two compare files")
 
         #format the filenames
         filenames = [x.strip() for x in filenames]
