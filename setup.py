@@ -89,6 +89,8 @@ setup(
             'repackageandpost = etl.repackageandpost:main [Tika]',
             'tsvtojson = etl.tsvtojson:main',
             'translatejson = etl.translatejson:main [Tika]',
+            'clusterscores = etl.cluster-scores:main [Tika]',
+            'similiarity = etl.similiarity:main [Tika]'
         ],
     }, 
     package_data = {

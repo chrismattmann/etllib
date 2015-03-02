@@ -26,7 +26,7 @@ from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnico
 _verbose = False
 _helpMessage = '''
 
-Usage: similarity [-f --directory] [-t --threshold] [-o --output] [-v --verbose] [-h --help]
+Usage: clusterscores [-f --directory] [-t --threshold] [-o --output] [-v --verbose] [-h --help]
 Options:
 
 
