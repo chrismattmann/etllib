@@ -17,6 +17,10 @@ tsvtojson
     Takes an input TSV file and parses it with a set of column headers and outputs a JSON file.
 translatejson
     Takes an input JSON file and a column header file and cred file and translates from source lang to dest lang using Bing's API and Apache Tika.
+similarity
+    Computes the similarity between a directory full of image files using a feature-based approach based on Jaccard's algorithm.
+clusterscores
+    Clusters similarity scores and outputs a Data Driven Documents (D3) compatible JSON representation of the clusters.
 ```
 
 Installation

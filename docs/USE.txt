@@ -22,6 +22,12 @@ computer:
 ``translatejson`` command
     Takes an input JSON file and a column header file and cred file and translates from 
     source lang to dest lang using Bing's API and Apache Tika.
+``similarity`` command
+    Computes the similarity between a directory full of image files using a feature-based 
+    approach based on Jaccard's algorithm.
+``clusterscores`` command
+    Clusters similarity scores and outputs a Data Driven Documents (D3) compatible JSON 
+    representation of the clusters.    
     
     
 ETLlib Library
@@ -38,7 +44,8 @@ Commands
 
 After installing the ETLlib package,  new commands are made available on
 your system, ``repackage`` and ``poster`` and ``repackageandpost`` and 
-``tsvtojson`` and ``translatejson`` .  These commands enable you to reformulate 
+``tsvtojson`` and ``translatejson`` and ``similiarity`` and ``clusterscores``.  
+These commands enable you to reformulate 
 aggregate  JSON documents, cleanse their fields (which may contain UTF-8 or other 
 weird encodings), convert from different formats (e.g., TSV to JSON), translate 
 fields within the documents using Apache Tika, and then to post those documents to Apache Solr. 
@@ -70,7 +77,8 @@ Use from Shell Scripts
 ----------------------
 
 The ``repackage`` and ``poster`` and ``repackageandpost`` and ``tsvtojson`` and
-``translatejson`` commands  may be used from shell scripts as well.  The only 
+``translatejson`` and ``similarity`` and ``clusterscores`` commands  may be used 
+from shell scripts as well.  The only 
 requirement for making these  commands available to shell scripts is the same as 
 for interactive sessions:  the shell's PATH environment variable must include the 
 directory that contains the commands.
@@ -104,7 +112,7 @@ Take in an input TSV file named computrabajo-ve-20121108.tsv and turn it into a 
 
 tsvtojson -t data/staging/computrabajo-ve-20121108.tsv -j data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json -c conf/colheaders.txt -o employmentjobs
 
-Extract out the ~9000 or so jobs present in computrabajo-ve-20121108.json under the "employmentjobs" key::
+Extract out the ~9000 or so jobs present in computrabajo-ve-20121108.json under the "employmentjobs" key:
 
 repackage -j ../../../../../data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json -o employmentjobs
 
@@ -112,6 +120,13 @@ Translate the fields defined in translate.cols in the JSON file named 648c3a4a-2
 
 translatejson -i data/jobs/repackager/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716e40.json -j data/jobs/translate/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716e40-t.json -c src/tika-python/lib/translate.cols -p src/tika-python/lib/translator.creds -f es -t en -v
 
+Compute the similarity of images in your $HOME/Pictures directory on Mac:
+
+cd $HOME/Pictures && similarity -m -f . > similarity-scores.txt
+
+Cluster a previously generated similarity score text file generated for the $HOME/Picutres directory on Mac and create a clusters.json file in the current directory:
+
+clusterscores -f $HOME/Pictures/ -o .
 
 ETLlib Library
 ===========
@@ -119,7 +134,8 @@ ETLlib Library
 The ETLlib Library is a Python-based application programming interface (API) for
 munging and processing  JSON data for ETL and analytics. In fact, the commands 
 ``poster`` and ``repackage`` and ``repackageandpost`` and ``tsvtojson`` and ``translatejson`` 
-are implemented using the ETLlib Library.  If shell-script programming is not to your taste, and you
+and ``similarity`` and ``clusterscores`` are implemented using the ETLlib Library.  If 
+shell-script programming is not to your taste, and you
 know Python, then using the ETLlib Library may be right for you.
 
 
