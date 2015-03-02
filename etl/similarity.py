@@ -1,3 +1,29 @@
+
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+# $Id$
+#
+# Author: Dongni 
+# Description: Use this script for generation similarity score among files. 
+#It wiil compare in metadata of both Key-based similarity and value-based similarity with 
+#different command line options.
+
 import tika
 from tika import parser
 import os
@@ -6,15 +32,23 @@ import getopt
 import json
 tika.initVM()
 import operator
+from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, convertValueUnicode
+
 
 
 _verbose = False
 _helpMessage = '''
 
-Usage: similarity [-v] [-f directory] [-c file1 file2]
+Usage: similarity [-m --metadata] [-r --resemblance] [-v --verbose] [-f directory] [-c file1 file2] [-h --help]
 
 
 Options:
+
+-m, --metadata
+	compare similarity by using file metadata key 
+
+-r, --resemblance
+	compare similarity by using file metadata value
 
 -v, --verbose
 	Work verbosely rather than silently.
@@ -45,16 +79,24 @@ def main(argv = None):
 
 	try:
 		try:
-			opts, args = getopt.getopt(argv[1:], 'hvf:c:', ['help', 'verbose', 'directory=', 'file=' ])
+			opts, args = getopt.getopt(argv[1:], 'hvf:c:mr', ['help', 'verbose', 'directory=', 'file=' , 'metadata' , 'resemblance'])
 		except getopt.error, msg:
 			raise _Usage(msg)
 
 		if len(opts) ==0:
 			raise _Usage(_helpMessage)
 
-		dirFile = ""
-		first_compare_file = ""
-		second_compare_file = ""
+		dirFile = '' 
+		first_compare_file = '' 
+		second_compare_file = ''
+		flag = 1
+
+		for option in argv[1:]:
+			if option in ('-m', '--metadata') :
+				flag = 1 
+			elif option in ('-r', '--resemblance') :
+				flag = 2 
+
 		for option, value in opts:
 			if option in ('-h', '--help'):
 				raise _Usage(_helpMessage)
@@ -67,8 +109,12 @@ def main(argv = None):
 				else :
 					index_of_file_option = argv.index('--file')
 				compare_file_name = argv[index_of_file_option+1 : ]
-				first_compare_file = compare_file_name[0]
-				second_compare_file = compare_file_name[1]
+
+				try : 
+					first_compare_file = compare_file_name[0].strip()
+					second_compare_file = compare_file_name[1].strip()
+				except IndexError, err :
+					raise _Usage("You need to input two file names" )
 
 			elif option in ('-f', '--directory'):
 				dirFile = value
@@ -76,72 +122,62 @@ def main(argv = None):
 				global _verbose
 				_verbose = True
 
-		union_feature_names = set()
 		file_parsed_data = {}
-		resemblance_scores = {}
-
+		filename_list = []
+		sorted_resemblance_scores = []
 
 		#count similarity for two given files
-		if first_compare_file and second_compare_file:
+		if first_compare_file and second_compare_file :
+
 			first_compare_file_path = os.path.join(dirFile, first_compare_file)
 			second_compare_file_path = os.path.join(dirFile, second_compare_file)
-			two_file_names = first_compare_file_path, second_compare_file_path
 
 
-			# if file is not in directory or not a .jpg
-			if not os.path.isfile(first_compare_file_path) or not ".jpg" in first_compare_file:
-				raise _Usage(_helpMessage)
-			elif not os.path.isfile(second_compare_file_path) or not ".jpg" in second_compare_file:
-				raise _Usage(_helpMessage)
+			# if file is not in directory
+			if not os.path.isfile(first_compare_file_path) :
+				raise _Usage("The first file does not exist!")
+			elif not os.path.isfile(second_compare_file_path) :
+				raise _Usage("The second file does not exist!")
 			else:
 
-				for filename in two_file_names:
-
-
-					# first compute the union of all features
-					parsedData = parser.from_file(filename)
-					file_parsed_data[filename] = parsedData["metadata"]
-					union_feature_names = union_feature_names | set(parsedData["metadata"].keys())
-
-				total_num_features = len(union_feature_names)
+				filename_list.append(first_compare_file_path)
+				filename_list.append(second_compare_file_path)
 
 		#count all files similarity in directory
 		else:
-
 			for filename in os.listdir(dirFile):
-				filename = os.path.join(dirFile, filename)
-				if not os.path.isfile(filename) or not ".jpg" in filename:
+				if filename.startswith('.'):
 					continue
 
-				# first compute the union of all features
-				parsedData = parser.from_file(filename)
-				file_parsed_data[filename] = parsedData["metadata"]
-				union_feature_names = union_feature_names | set(parsedData["metadata"].keys())
+				filename = os.path.join(dirFile, filename)
+				
+				if not os.path.isfile(filename) :
+					continue
+				# append all valid filenames
+				filename_list.append(filename)
 
-			total_num_features = len(union_feature_names)
+		if flag == 1 :
+			sorted_resemblance_scores, file_parsed_data = compareKeySimilarity(filename_list)
+			print "Resemblance:\n"
 
+			for tuple in sorted_resemblance_scores:
+				print os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + convertKeyUnicode(file_parsed_data[tuple[0]])+'\n'
 
+		elif flag == 2 :
+			sorted_resemblance_scores, file_parsed_data = compareValueSimilarity(filename_list)
+			print "Resemblance:\n"
 
-		# now compute the specific resemblance and containment scores
-		for filename in file_parsed_data.keys():
-			overlap = {}
-			overlap = set(file_parsed_data[filename].keys()) & set(union_feature_names) 
-			resemblance_scores[filename] = float(len(overlap))/total_num_features
-
-
-		sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
-		
-		print "Resemblance:\n"
-		for tuple in sorted_resemblance_scores:
-			print os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1])+"\t"
-		#with open("similarity-scores.txt", "w") as f:
-			#f.write("Resemblance : \n")
-			#for tuple in sorted_resemblance_scores:
-				#f.write(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1])+"\n")
+			for tuple in sorted_resemblance_scores:
+				print os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + convertValueUnicode(file_parsed_data[tuple[0]])+'\n'
+			
 
 	except _Usage, err:
 		print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
 		return 2
+
+
+
+
 
 if __name__ == "__main__":
 	sys.exit(main())

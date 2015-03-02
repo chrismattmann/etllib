@@ -25,6 +25,8 @@
 import urllib2
 urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 import json
+import os
+import operator
 
 try:
     import tika
@@ -165,6 +167,121 @@ def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
 def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
     return json.dumps(jsondocs, encoding=encoding)
+
+
+
+def compareKeySimilarity ( fileDir, encoding = 'utf-8') :
+
+    union_feature_names = set()
+    file_parsed_data = {}
+    resemblance_scores = {}
+
+    for filename in fileDir:
+        parsedData = parser.from_file(filename)
+        file_parsed_data[filename] = parsedData["metadata"]
+        union_feature_names = union_feature_names | set(parsedData["metadata"].keys())
+
+    total_num_features = len(union_feature_names)
+
+    for filename in file_parsed_data.keys():
+        overlap = {}
+        overlap = set(file_parsed_data[filename].keys()) & set(union_feature_names) 
+        resemblance_scores[filename] = float(len(overlap))/total_num_features
+
+    sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
+
+    return sorted_resemblance_scores, file_parsed_data
+
+def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
+    union_feature_names = set()
+    file_parsed_data = {}
+    resemblance_scores = {}
+
+    for filename in fileDir:
+        file_parsed = []
+        # first compute the union of all features
+        parsedData = parser.from_file(filename)
+        #get key : value of metadata
+        for key in parsedData["metadata"].keys() :
+            file_parsed.append(str(key.strip() + ": " + parsedData["metadata"].get(key).strip()))
+
+
+        file_parsed_data[filename] = set(file_parsed)
+        union_feature_names = union_feature_names | set(file_parsed_data[filename])
+
+    total_num_features = len(union_feature_names)
+    
+    for filename in file_parsed_data.keys():
+        overlap = {}
+        overlap = file_parsed_data[filename] & set(union_feature_names) 
+        resemblance_scores[filename] = float(len(overlap))/total_num_features
+
+    sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted_resemblance_scores, file_parsed_data
+
+def convertKeyUnicode( fileDict, key = None) :
+    fileUTFDict = {}
+    for key in fileDict.keys():
+        if isinstance(key, unicode) :
+            key = str(key).strip(" ")
+        value = fileDict.get(key)
+        if isinstance(value, unicode) :
+            value = str(value).strip(" ")
+        fileUTFDict[key] = value
+        
+    return str(fileUTFDict)
+
+
+def convertValueUnicode( fileDict ) :
+    fileUTFDict = []
+    for record in fileDict:
+        if isinstance(record, unicode) :
+            record = str(record).strip(" ")
+        fileUTFDict.append(record)
+        
+    return str(fileUTFDict)
+
+def generateCluster( similarity_score, threshold = 0.01) :
+    prior = None
+    clusters = []
+    clusterCount = 0
+    cluster = {"name":"cluster"+str(clusterCount)}
+    clusterData = []
+    for line in similarity_score:
+        featureDataList = line.split(",",2) # file name,score, metadata
+        if len(featureDataList) != 3:
+            continue
+
+        if prior != None:
+            diff = prior-float(featureDataList[1])
+        else:
+            diff = -1.0
+
+        # cleanse the \n
+        featureDataList[1] = featureDataList[1].strip()
+        featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "metadata" : featureDataList[2]}
+
+        if diff > threshold:
+            cluster["children"] = clusterData
+            clusters.append(cluster)
+            clusterCount = clusterCount + 1
+            cluster = {"name":"cluster"+str(clusterCount)}
+            clusterData = []
+            clusterData.append(featureData)
+            prior = float(featureDataList[1])
+        else:
+            clusterData.append(featureData)
+            prior = float(featureDataList[1])
+            #print featureDataList[2]
+
+    #add the last cluster into clusters
+    cluster["children"] = clusterData
+    clusters.append(cluster)
+    clusterCount = clusterCount + 1
+    cluster = {"name":"cluster"+str(clusterCount)}
+
+    clusterStruct = {"name":"clusters", "children":clusters}
+    return clusterStruct
 
 def _createOrAppendToList(doc, key, val):
     if key in doc:
