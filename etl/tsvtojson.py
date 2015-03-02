@@ -31,16 +31,14 @@ import csv
 import json
 import sys
 import getopt
-import magic
 import uuid
 import os
-
+from etllib import readEncodedVal
 
 _verbose = False
 _guessEncoding = False
-_theMagic = magic.Magic(mime_encoding=True)
 _helpMessage = '''
-Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field][-e encoding file]
+Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field] [-e encoding file]
 
 Options:
 -t tsv file, --tsv=file
@@ -115,9 +113,18 @@ def main(argv=None):
              _verbose = True
           elif option in ('-e', '--encoding'):
               encodingFilePath = value
-             
-       if not checkFilePath(tsvFilePath) or not checkFilePath(jsonFilePath, False) or not checkFilePath(colHeaderFilePath) or objectType == None:
-           raise _Usage(_helpMessage)      
+      
+       errorString = []
+       if not checkFilePath(tsvFilePath):
+          errorString.append("Error: wrong/missing tsvFilePath")            
+       if not checkFilePath(jsonFilePath, False):
+          errorString.append("Error: Json file path is wrong/missing or Json File already exists")
+       if not checkFilePath(colHeaderFilePath):
+          errorString.append("Error: wrong/missing column headers")
+       if objectType == None:
+           errorString.append("Error: None object type passed")
+       if len(errorString) > 0:
+          raise _Usage(_helpMessage + '\n' + '\n'.join(errorString)) 
 
        _guessEncoding = encodingFilePath <> None
        if _guessEncoding:
@@ -148,18 +155,7 @@ def main(argv=None):
                         continue                    
                     
                     if line[num] <> None and line[num].lstrip() <> '':
-                        if _guessEncoding:
-                            for encoding in encodings:
-                                try:
-                                    val = line[num].decode(encoding).encode("utf-8")
-                                except UnicodeDecodeError:
-                                    if encoding <> encodings[-1]:
-                                        continue
-                                    val = convertToUTF8(line[num])
-                                else:
-                                    break
-                        else:
-                            val = convertToUTF8(line[num])
+                        val = readEncodedVal(line, num, encodings)
                     else:
                         val = ''
                     
@@ -177,7 +173,6 @@ def main(argv=None):
                         if not jsonStruct[uniqueField] in fieldCache:
                             jsonStructs.append(jsonStruct)
                             fieldCache[jsonStruct[uniqueField]] = "yes"
-                            jsonStructs.append(jsonStruct)
                         else:
                             verboseLog("Skipping adding record: ["+jsonStruct["id"]+"]: duplicate unique field: ["+jsonStruct[uniqueField]+"]")
                     else:
@@ -193,19 +188,6 @@ def main(argv=None):
    except _Usage, err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
-
-def convertToUTF8(src):
-    try:
-        encoding = _theMagic.from_buffer(src)
-        val = src.decode(encoding).encode("utf-8")
-    except magic.MagicException, err:
-        verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
-        val = src
-    except LookupError, err:
-        verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
-        val = src
-    finally:
-        return val
 
 if __name__ == "__main__":
     sys.exit(main())

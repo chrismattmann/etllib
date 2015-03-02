@@ -31,7 +31,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-version = '0.0.0'
+version = '0.0.2'
 
 _descr = u'''**********
 etllib
@@ -89,6 +89,8 @@ setup(
             'repackageandpost = etl.repackageandpost:main [Tika]',
             'tsvtojson = etl.tsvtojson:main',
             'translatejson = etl.translatejson:main [Tika]',
+            'clusterscores = etl.cluster-scores:main [Tika]',
+            'similiarity = etl.similiarity:main [Tika]'
         ],
     }, 
     package_data = {

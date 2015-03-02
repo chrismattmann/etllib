@@ -30,15 +30,16 @@ from etllib import prepareDocForSolr, postJsonDocToSolr
 
 _verbose = False
 _helpMessage = '''
-Usage: poster [-v] [-u url] 
+Usage: poster [-v] [-u url] [-d directory]
 
 Options:
 -u url, --url=url
     Post to Apache Solr at the given url.
 -v, --verbose
-    Work verbosely rather than silently.
-    
-Input:
+    Work verbosely rather than silently.  
+-d, --directory
+    reads input json files from this directory
+Input: STDIN or -d
 STDIN
     Line by line absolute or relative paths to JSON docs to post to Apache Solr.
 '''
@@ -55,10 +56,9 @@ class _Usage(Exception):
 def main(argv=None):
    if argv is None:
      argv = sys.argv
-
    try:
        try:
-          opts, args = getopt.getopt(argv[1:],'hvu:',['help', 'verbose', 'url='])
+          opts, args = getopt.getopt(argv[1:],'hvu:d:',['help', 'verbose', 'url=', 'directory='])
        except getopt.error, msg:
          raise _Usage(msg)    
      
@@ -66,7 +66,7 @@ def main(argv=None):
            raise _Usage(_helpMessage)
          
        solrUrl=None
-      
+       dirFile = "" 
        for option, value in opts:
           if option in ('-h', '--help'):
              raise _Usage(_helpMessage)
@@ -75,9 +75,11 @@ def main(argv=None):
           elif option in ('-v', '--verbose'):
              global _verbose
              _verbose = True
-    
-       for filename in sys.stdin:
-           filename = filename.rstrip()
+	  elif option in ('-d', '--directory'):
+             dirFile = value
+       
+       for filename in (os.listdir(dirFile) if dirFile else sys.stdin):
+           filename = (dirFile+"\\" + filename.rstrip()) if dirFile else filename.rstrip()
            if not ".json" in filename or not os.path.exists(filename):
                continue
            verboseLog("Processing: "+filename)

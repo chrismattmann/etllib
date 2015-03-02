@@ -23,6 +23,22 @@ Installation
 ====
 ETLlib can be installed with or without Tika support. Please check the relevant section below for more details.
 
+libmagic library will need to be availabile. To test this is the check for the presence of the file command and/or the libmagic man page.
+
+```
+$ man libmagic
+```
+
+On Mac OSX, Apple has implemented their own version of the file command. However, libmagic can be installed using homebrew
+
+```
+$ brew install libmagic
+```
+
+After brew finished installing, the test for the libmagic man page should pass.
+
+
+
 With Tika
 ---
 For Tika support you will need to install [tika-python](https://github.com/chrismattmann/tika-python) and its dependencies first. Once you have that installed, you can install ETLlib with Tika support using the following commands:

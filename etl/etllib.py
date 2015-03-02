@@ -25,6 +25,8 @@
 import urllib2
 urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 import json
+import os
+import operator
 
 try:
     import tika
@@ -33,6 +35,9 @@ try:
     tika_support = True
 except ImportError:
     tika_support = False
+
+import magic
+_theMagic = magic.Magic(mime_encoding=True)
 
 def prepareDocs(jsondata, objectType):
     jsondoc = json.loads(jsondata)
@@ -72,7 +77,38 @@ def cleanseBody(theDoc):
             else:
                 theDoc["tika_"+key] = val
         theDoc["body"] = parsed["content"]
-        
+
+
+def readEncodedVal(line, colnum, encodings=None):
+    val = None
+    if encodings != None:
+        for encoding in encodings:
+            try:
+                val = line[colnum].decode(encoding).encode("utf-8")
+            except UnicodeDecodeError:
+                if encoding != encodings[-1]:
+                    continue
+                val = convertToUTF8(line[colnum])
+            else:
+                break
+    else:
+        val = convertToUTF8(line[colnum])
+    return val
+
+
+def convertToUTF8(src):
+    try:
+        encoding = _theMagic.from_buffer(src)
+        val = src.decode(encoding).encode("utf-8")
+    except magic.MagicException, err:
+        verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
+        val = src
+    except LookupError, err:
+        verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
+        val = src
+    finally:
+        return val
+
 
 def unravelStructs(theDoc):
     if "countries" in theDoc:
@@ -93,13 +129,22 @@ def unravelStructs(theDoc):
                     _createOrAppendToList(theDoc, "countries_location_geo_type", country["location"]["geo"]["type"])
         theDoc.pop("countries", None)
         
+def requiresDateFormating(dateString):
+    if 'T' not in dateString:
+        if  re.search('^\d{4}-\d{2}-\d{2}$', dateString) == None:
+            raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
+        return True
+    if  re.search('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
+        raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
+    return False
+
 def formatDate(theDoc):
     for key in theDoc.iterkeys():
         if "date" in key.lower():
             value = theDoc[key]
-            theDoc[key] = value+"T00:00:00.000Z"
+            if requiresDateFormating(value):
+                theDoc[key] = value+"T00:00:00.000Z"
         
-
 def postJsonDocToSolr(solrUrl, data):
     print "POST "+solrUrl
     req = urllib2.Request(solrUrl, data, {'Content-Type': 'application/json'})
@@ -122,6 +167,121 @@ def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
 def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
     return json.dumps(jsondocs, encoding=encoding)
+
+
+
+def compareKeySimilarity ( fileDir, encoding = 'utf-8') :
+
+    union_feature_names = set()
+    file_parsed_data = {}
+    resemblance_scores = {}
+
+    for filename in fileDir:
+        parsedData = parser.from_file(filename)
+        file_parsed_data[filename] = parsedData["metadata"]
+        union_feature_names = union_feature_names | set(parsedData["metadata"].keys())
+
+    total_num_features = len(union_feature_names)
+
+    for filename in file_parsed_data.keys():
+        overlap = {}
+        overlap = set(file_parsed_data[filename].keys()) & set(union_feature_names) 
+        resemblance_scores[filename] = float(len(overlap))/total_num_features
+
+    sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
+
+    return sorted_resemblance_scores, file_parsed_data
+
+def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
+    union_feature_names = set()
+    file_parsed_data = {}
+    resemblance_scores = {}
+
+    for filename in fileDir:
+        file_parsed = []
+        # first compute the union of all features
+        parsedData = parser.from_file(filename)
+        #get key : value of metadata
+        for key in parsedData["metadata"].keys() :
+            file_parsed.append(str(key.strip() + ": " + parsedData["metadata"].get(key).strip()))
+
+
+        file_parsed_data[filename] = set(file_parsed)
+        union_feature_names = union_feature_names | set(file_parsed_data[filename])
+
+    total_num_features = len(union_feature_names)
+    
+    for filename in file_parsed_data.keys():
+        overlap = {}
+        overlap = file_parsed_data[filename] & set(union_feature_names) 
+        resemblance_scores[filename] = float(len(overlap))/total_num_features
+
+    sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted_resemblance_scores, file_parsed_data
+
+def convertKeyUnicode( fileDict, key = None) :
+    fileUTFDict = {}
+    for key in fileDict.keys():
+        if isinstance(key, unicode) :
+            key = str(key).strip(" ")
+        value = fileDict.get(key)
+        if isinstance(value, unicode) :
+            value = str(value).strip(" ")
+        fileUTFDict[key] = value
+        
+    return str(fileUTFDict)
+
+
+def convertValueUnicode( fileDict ) :
+    fileUTFDict = []
+    for record in fileDict:
+        if isinstance(record, unicode) :
+            record = str(record).strip(" ")
+        fileUTFDict.append(record)
+        
+    return str(fileUTFDict)
+
+def generateCluster( similarity_score, threshold = 0.01) :
+    prior = None
+    clusters = []
+    clusterCount = 0
+    cluster = {"name":"cluster"+str(clusterCount)}
+    clusterData = []
+    for line in similarity_score:
+        featureDataList = line.split(",",2) # file name,score, metadata
+        if len(featureDataList) != 3:
+            continue
+
+        if prior != None:
+            diff = prior-float(featureDataList[1])
+        else:
+            diff = -1.0
+
+        # cleanse the \n
+        featureDataList[1] = featureDataList[1].strip()
+        featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "metadata" : featureDataList[2]}
+
+        if diff > threshold:
+            cluster["children"] = clusterData
+            clusters.append(cluster)
+            clusterCount = clusterCount + 1
+            cluster = {"name":"cluster"+str(clusterCount)}
+            clusterData = []
+            clusterData.append(featureData)
+            prior = float(featureDataList[1])
+        else:
+            clusterData.append(featureData)
+            prior = float(featureDataList[1])
+            #print featureDataList[2]
+
+    #add the last cluster into clusters
+    cluster["children"] = clusterData
+    clusters.append(cluster)
+    clusterCount = clusterCount + 1
+    cluster = {"name":"cluster"+str(clusterCount)}
+
+    clusterStruct = {"name":"clusters", "children":clusters}
+    return clusterStruct
 
 def _createOrAppendToList(doc, key, val):
     if key in doc:
