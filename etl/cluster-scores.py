@@ -65,7 +65,7 @@ def main(argv = None):
         if len(opts) ==0:
             raise _Usage(_helpMessage)
 
-        threshold = 0.0
+        threshold = 0.01
         output_dir = ""
         filenames = []
         filename_list = []
