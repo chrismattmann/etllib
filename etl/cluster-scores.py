@@ -26,12 +26,14 @@ from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnico
 _verbose = False
 _helpMessage = '''
 
-Usage: clusterscores [-f --directory] [-t --threshold] [-o --output] [-v --verbose] [-h --help]
+Usage: clusterscores [-f --directory] [-c --file] [-t --threshold] [-o --output] [-v --verbose] [-h --help]
 Options:
 
 
 -f, --directory [path to directory]
     read similarity-scores.txt file from this directory
+-c, --file [file1 file2, file3, ...]
+    compare given files
 -t, --threshold [value of threshold]
     set threshold for cluster similarity
 -o, --output
@@ -58,7 +60,7 @@ def main(argv = None):
 
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'f:t:o:vh', ['file=', 'threshold=', 'output=', 'verbose', 'help'])
+            opts, args = getopt.getopt(argv[1:], 'f:c:t:o:vh', ['directory=', 'file=', 'threshold=', 'output=', 'verbose', 'help'])
         except getopt.error, msg:
             raise _Usage(msg)
 
@@ -69,39 +71,54 @@ def main(argv = None):
         output_dir = ""
         filenames = []
         filename_list = []
+        dirFile = ""
         if ('-v'in argv) or ('--verbose' in argv):
             global _verbose
-            _verbose = Trues
+            _verbose = True
 
         elif ('-h'in argv) or ('--help' in argv):
             raise _Usage(_helpMessage) 
 
-        if ('-f'in argv) or ('--file' in argv):
-            if '-f' in argv:
-                index = argv.index('-f')
-            elif '--file' in argv:
-                index = argv.index('--file')
-            filenames_str= str(argv[1+index : ])
-            last_index = filenames_str.find("-")
-            if last_index <> -1:
-                filenames = filenames_str[1 : last_index].split(',')
-            else:
-                filenames = filenames_str[1: len(filenames_str)-1].split(',')
+        else :
+            if ('-t'in argv) or ('--threshold' in argv):
+                if '-t' in argv :
+                    index = argv.index('-t')
+                elif '--threshold' in argv:
+                    index = argv.index('--threshold')
+                threshold = float(argv[index+1])
+            if ('-o'in argv) or ('--output' in argv):
+                if '-o' in argv :
+                    index = argv.index('-o')
+                elif '--output' in argv:
+                    index = argv.index('--output')
+                output_dir = argv[1+index]
+                
+            if ('-c'in argv) or ('--file' in argv):
+                if '-c' in argv:
+                    index = argv.index('-c')
+                elif '--file' in argv:
+                    index = argv.index('--file')
+                filenames_str= str(argv[1+index : ])
+                last_index = filenames_str.find("-")
+                if last_index <> -1:
+                    filenames = filenames_str[1 : last_index].split(',')
+                else:
+                    filenames = filenames_str[1: len(filenames_str)-1].split(',')
 
-        if ('-t'in argv) or ('--threshold' in argv):
-            if '-t' in argv :
-                index = argv.index('-t')
-            elif '--threshold' in argv:
-                index = argv.index('--threshold')
-            threshold = float(argv[index+1])
-        if ('-o'in argv) or ('--output' in argv):
-            if '-o' in argv :
-                index = argv.index('-o')
-            elif '--output' in argv:
-                index = argv.index('--output')
-            output_dir = argv[1+index]
 
-        
+            if('-f' in argv) or ('--directory' in argv) :
+                if '-f' in argv:
+                    index = argv.index('-f')
+                elif '--directory' in argv:
+                    index = argv.index('--directory')
+                dirFile = argv[index+1]
+                if not ('-c'in argv) and not ('--file' in argv) :
+                    for filename in os.listdir(dirFile) :
+                        if filename.startswith('.') :
+                            continue
+                        if not os.path.isfile(os.path.join(dirFile, filename)) :
+                            continue
+                        filenames.append(filename)
 
         if len(filenames) <2 :
             raise _Usage("you need to type in at least two compare files")
@@ -113,8 +130,9 @@ def main(argv = None):
         for filename in filenames :
             if not filename :
                 continue
-            if not os.path.isfile(filename) :
+            if not os.path.isfile(os.path.join(dirFile, filename)) :
                 raise _Usage("not valid file")
+            filename = os.path.join(dirFile, filename) if dirFile else filename
             filename_list.append(filename)
         
         similarity_score = []
