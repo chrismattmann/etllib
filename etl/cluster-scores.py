@@ -131,7 +131,7 @@ def main(argv = None):
             if not filename :
                 continue
             if not os.path.isfile(os.path.join(dirFile, filename)) :
-                raise _Usage("not valid file")
+                continue
             filename = os.path.join(dirFile, filename) if dirFile else filename
             filename_list.append(filename)
         

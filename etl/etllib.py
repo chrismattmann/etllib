@@ -223,10 +223,10 @@ def convertKeyUnicode( fileDict, key = None) :
     fileUTFDict = {}
     for key in fileDict.keys():
         if isinstance(key, unicode) :
-            key = str(key).strip(" ")
+            key = key.encode('utf-8').strip()
         value = fileDict.get(key)
         if isinstance(value, unicode) :
-            value = str(value).strip(" ")
+            value = value.encode('utf-8').strip()
         fileUTFDict[key] = value
         
     return str(fileUTFDict)
@@ -236,7 +236,7 @@ def convertValueUnicode( fileDict ) :
     fileUTFDict = []
     for record in fileDict:
         if isinstance(record, unicode) :
-            record = str(record).strip(" ")
+            record = record.encode('utf-8').strip()
         fileUTFDict.append(record)
         
     return str(fileUTFDict)
