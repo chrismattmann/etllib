@@ -130,6 +130,7 @@ def main(argv = None):
         for filename in filenames :
             if not filename :
                 continue
+
             if not os.path.isfile(os.path.join(dirFile, filename)) or not '.jpg' in filename:
                 continue
             filename = os.path.join(dirFile, filename) if dirFile else filename
