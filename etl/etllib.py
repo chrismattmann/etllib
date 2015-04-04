@@ -231,16 +231,6 @@ def convertKeyUnicode( fileDict, key = None) :
         
     return str(fileUTFDict)
 
-
-''' def convertValueUnicode( fileDict ) :
-    fileUTFDict = []
-    for record in fileDict:
-        if isinstance(record, unicode) :
-            record = record.encode('utf-8').strip()
-        fileUTFDict.append(record)
-        
-    return str(fileUTFDict)'''
-
 def generateCluster( similarity_score, threshold = 0.01) :
     prior = None
     clusters = []
