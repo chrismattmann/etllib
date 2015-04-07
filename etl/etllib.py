@@ -203,7 +203,7 @@ def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
         parsedData = parser.from_file(filename)
         #get key : value of metadata
         for key in parsedData["metadata"].keys() :
-            file_parsed.append(str(key.strip() + ": " + parsedData["metadata"].get(key).strip()))
+            file_parsed.append(str(key.encode('utf-8').strip() + ": " + parsedData["metadata"].get(key).encode('utf-8').strip()))
 
 
         file_parsed_data[filename] = set(file_parsed)
@@ -231,16 +231,6 @@ def convertKeyUnicode( fileDict, key = None) :
         
     return str(fileUTFDict)
 
-
-def convertValueUnicode( fileDict ) :
-    fileUTFDict = []
-    for record in fileDict:
-        if isinstance(record, unicode) :
-            record = record.encode('utf-8').strip()
-        fileUTFDict.append(record)
-        
-    return str(fileUTFDict)
-
 def generateCluster( similarity_score, threshold = 0.01) :
     prior = None
     clusters = []
@@ -248,9 +238,13 @@ def generateCluster( similarity_score, threshold = 0.01) :
     cluster = {"name":"cluster"+str(clusterCount)}
     clusterData = []
     for line in similarity_score:
-        featureDataList = line.split(",",2) # file name,score, metadata
-        if len(featureDataList) != 3:
-            continue
+        if "Resemblance" in line:
+                continue
+        featureDataList = line.split("{", 1)
+        metadata = '{' + featureDataList[1];
+        featureDataList = featureDataList[0].rsplit(",", 3)
+        featureDataList.remove('')
+        featureDataList.append(metadata)
 
         if prior != None:
             diff = prior-float(featureDataList[1])
@@ -259,7 +253,10 @@ def generateCluster( similarity_score, threshold = 0.01) :
 
         # cleanse the \n
         featureDataList[1] = featureDataList[1].strip()
-        featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "metadata" : featureDataList[2]}
+        if(len(featureDataList) == 4):
+            featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "path" :featureDataList[2],  "metadata" : featureDataList[3]}
+        elif (len(featureDataList) == 3):
+            featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "path" :featureDataList[2]}
 
         if diff > threshold:
             cluster["children"] = clusterData
@@ -273,7 +270,7 @@ def generateCluster( similarity_score, threshold = 0.01) :
             clusterData.append(featureData)
             prior = float(featureDataList[1])
             #print featureDataList[2]
-
+            
     #add the last cluster into clusters
     cluster["children"] = clusterData
     clusters.append(cluster)

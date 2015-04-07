@@ -21,7 +21,7 @@ import json
 import getopt
 import sys
 import os
-from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, convertValueUnicode, generateCluster
+from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, generateCluster
 
 _verbose = False
 _helpMessage = '''
@@ -116,7 +116,7 @@ def main(argv = None):
                     for filename in os.listdir(dirFile) :
                         if filename.startswith('.') :
                             continue
-                        if not os.path.isfile(os.path.join(dirFile, filename)) :
+                        if not os.path.isfile(os.path.join(dirFile, filename)) or not '.jpg' in filename:
                             continue
                         filenames.append(filename)
 
@@ -130,15 +130,16 @@ def main(argv = None):
         for filename in filenames :
             if not filename :
                 continue
-            if not os.path.isfile(os.path.join(dirFile, filename)) :
-                raise _Usage("not valid file")
+
+            if not os.path.isfile(os.path.join(dirFile, filename)) or not '.jpg' in filename:
+                continue
             filename = os.path.join(dirFile, filename) if dirFile else filename
             filename_list.append(filename)
         
         similarity_score = []
         sorted_resemblance_scores, file_parsed_data = compareKeySimilarity(filename_list)
         for tuple in sorted_resemblance_scores:
-            similarity_score.append(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + convertKeyUnicode(file_parsed_data[tuple[0]])+'\n')
+            similarity_score.append(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + tuple[0] + "," + convertKeyUnicode(file_parsed_data[tuple[0]])+'\n')
 
         clusterStruct = generateCluster(similarity_score, threshold)
         #output score in file
