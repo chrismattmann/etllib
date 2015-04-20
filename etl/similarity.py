@@ -32,7 +32,7 @@ import getopt
 import json
 tika.initVM()
 import operator
-from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, convertValueUnicode
+from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode
 
 
 
@@ -170,14 +170,14 @@ def main(argv = None):
 
 		elif flag == 2 :
 			sorted_resemblance_scores, file_parsed_data = compareValueSimilarity(filename_list)
-			print "Resemblance:\n"
+			'''print "Resemblance:\n"
 
 			for tuple in sorted_resemblance_scores:
-				print os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + tuple[0] + ","+ convertValueUnicode(file_parsed_data[tuple[0]])+'\n'
+				print os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + tuple[0] + ","+ convertKeyUnicode(file_metadata[tuple[0]])+'\n'''
 			with open("similarity-scores.txt", "w") as f:
 				f.write("Resemblance : \n")
 				for tuple in sorted_resemblance_scores:
-					f.write(os.path.basename(tuple[0].rstrip(os.sep)) + ","+str(tuple[1]) + "," + tuple[0] + "," + convertValueUnicode(file_parsed_data[tuple[0]]) + '\n')
+					f.write(os.path.basename(tuple[0].rstrip(os.sep)) + ","+str(tuple[1]) + "," + tuple[0] + "," + convertKeyUnicode(file_parsed_data[tuple[0]]) + '\n')
 			
 
 	except _Usage, err:

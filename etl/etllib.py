@@ -196,11 +196,13 @@ def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
     union_feature_names = set()
     file_parsed_data = {}
     resemblance_scores = {}
+    file_metadata={}
 
     for filename in fileDir:
         file_parsed = []
         # first compute the union of all features
         parsedData = parser.from_file(filename)
+        file_metadata[filename] = parsedData["metadata"]
         #get key : value of metadata
         for key in parsedData["metadata"].keys() :
             file_parsed.append(str(key.encode('utf-8').strip() + ": " + parsedData["metadata"].get(key).encode('utf-8').strip()))
@@ -217,7 +219,7 @@ def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
         resemblance_scores[filename] = float(len(overlap))/total_num_features
 
     sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
-    return sorted_resemblance_scores, file_parsed_data
+    return sorted_resemblance_scores, file_metadata
 
 def convertKeyUnicode( fileDict, key = None) :
     fileUTFDict = {}
