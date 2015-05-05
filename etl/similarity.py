@@ -134,9 +134,9 @@ def main(argv = None):
 
 
 			# if file is not in directory
-			if not os.path.isfile(first_compare_file_path) or not ".jpg" in first_compare_file_path :
+			if not os.path.isfile(first_compare_file_path) :
 				raise _Usage("The first file does not exist!")
-			elif not os.path.isfile(second_compare_file_path) or not ".jpg" in second_compare_file_path:
+			elif not os.path.isfile(second_compare_file_path) :
 				raise _Usage("The second file does not exist!")
 			else:
 
@@ -151,7 +151,7 @@ def main(argv = None):
 
 				filename = os.path.join(dirFile, filename)
 				
-				if not os.path.isfile(filename) or not ".jpg" in filename:
+				if not os.path.isfile(filename) :
 					continue
 				# append all valid filenames
 				filename_list.append(filename)
