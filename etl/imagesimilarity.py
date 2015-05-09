@@ -21,16 +21,16 @@ import json
 import getopt
 import sys
 import os
-from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, generateCluster
+from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, generateCirclePacking, generateCluster, generateLevelCluster
 
 _verbose = False
 _helpMessage = '''
 
-Usage: clusterscores [-v --verbose] [-h --help] <operation> [--threshold <threshold>] [-f --directory <directory of images>] [-c --file <file1 file2>] 
+Usage: imagesimilarity [-v --verbose] [-h --help] <operation> [--threshold <threshold>] [--maxnode <maxNumberOfNode>] [-f --directory <directory of images>] [-c --file <file1 file2>] 
 
 Operation:
-DEFAULT IS -key
---key    
+DEFAULT IS --key
+--key
     compare similarity by using file metadata key 
 
 --value
@@ -38,7 +38,9 @@ DEFAULT IS -key
 
 Options:  
 --threshold [value of threshold] <default threshold = 0.01>
-    set threshold for cluster similarity
+    set threshold for cluster similarity   
+--maxnode [value of number of nodes] <default num = 10>
+    set max num of node for each cluster node
 -o, --output
     the directory of output files
 -f, --directory [path to directory]
@@ -51,12 +53,14 @@ Options:
     show help on the screen
 
 Example:
-clusterscores.py -f [directory of files]                                    
-clusterscores.py --threshold 0.001 -f [directory of files]                           
-clusterscores.py --value -threshold 0.001 -o [output directory] -f [directory of files]     
-clusterscores.py -c [file1 file2]                                         
-clusterscores.py --threshold 0.001 -c [file1 file2]                         
-clusterscores.py --key --threshold 0.001 -o [output directory] -c [file1 file2] 
+imagesimilarity.py -f [directory of images]
+imagesimilarity.py -o [directory of output files] -f [directory of images]
+imagesimilarity.py --key  --threshold [threshold] -f [directory of images]
+imagesimilarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -f [directory of images]
+imagesimilarity.py -c [file1 file2]
+imagesimilarity.py -o [directory of output files] -c [file1 file2]
+imagesimilarity.py --key  --threshold [threshold] -c [file1 file2]
+imagesimilarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -c [file1 file2]
 
 '''
 
@@ -76,7 +80,7 @@ def main(argv = None):
 
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'f:c:t:o:vhkr', ['directory=', 'file=', 'threshold=', 'output=', 'verbose', 'help', 'key', 'value'])
+            opts, args = getopt.getopt(argv[1:], 'f:c:t:o:vhkrm:', ['directory=', 'file=', 'threshold=', 'output=', 'verbose', 'help', 'key', 'value', 'maxnode='])
         except getopt.error, msg:
             raise _Usage(msg)
 
@@ -89,6 +93,7 @@ def main(argv = None):
         filename_list = []
         dirFile = ""
         flag = 1
+        maxNumberOfNode = 10
 
         for option in argv[1:]:
             if option in ('--key') :
@@ -108,6 +113,10 @@ def main(argv = None):
                 index = argv.index('--threshold')
                 threshold = float(argv[index+1])
 
+            if ('--maxnode' in argv):
+                index = argv.index('--maxnode')
+                maxNumberOfNode = argv[index+1]
+
             if ('-o'in argv) or ('--output' in argv):
                 if '-o' in argv :
                     index = argv.index('-o')
@@ -121,7 +130,7 @@ def main(argv = None):
                 elif '--file' in argv:
                     index = argv.index('--file')
                 filenames = argv[1+index : ]
-                if len(filenames > 2):
+                if len(filenames) > 2:
                     raise _Usage("you can only compare two files")
 
             if('-f' in argv) or ('--directory' in argv) :
@@ -156,9 +165,16 @@ def main(argv = None):
 
         #generate cluster json
         clusterStruct = generateCluster(similarity_score, threshold)
-        #output score in file
+        clusterStruct = json.dumps(clusterStruct, sort_keys=True, indent=4, separators=(',', ': '))
+        circlePackingStruct = generateCirclePacking(similarity_score, threshold)
+        levelClusterStruct = generateLevelCluster(clusterStruct)
+
         with open(os.path.join(output_dir, "clusters.json"), "w") as f:
-            f.write(json.dumps(clusterStruct, sort_keys=True, indent=4, separators=(',', ': ')))
+            f.write(clusterStruct)
+        with open(os.path.join(output_dir, "levelCluster.json"), "w") as f:
+            f.write(json.dumps(levelClusterStruct, sort_keys=True, indent=4, separators=(',', ': ')))
+        with open(os.path.join(output_dir, "circle.json"), "w") as f:
+            f.write(json.dumps(circlePackingStruct, sort_keys=True, indent=4, separators=(',', ': ')))
 
     except _Usage, err:
         print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
