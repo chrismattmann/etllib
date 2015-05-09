@@ -27,11 +27,12 @@ urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 import json
 import os
 import operator
+import ast
+import sys
 
 try:
     import tika
     from tika import parser
-    tika.initVM()
     tika_support = True
 except ImportError:
     tika_support = False
@@ -109,7 +110,6 @@ def convertToUTF8(src):
     finally:
         return val
 
-
 def unravelStructs(theDoc):
     if "countries" in theDoc:
         countriesJson = theDoc["countries"]
@@ -128,6 +128,12 @@ def unravelStructs(theDoc):
                 if "type" in country["location"]["geo"]:
                     _createOrAppendToList(theDoc, "countries_location_geo_type", country["location"]["geo"]["type"])
         theDoc.pop("countries", None)
+        
+def _createOrAppendToList(doc, key, val):
+    if key in doc:
+        doc[key].append(val)
+    else:
+        doc[key] = [val]
         
 def requiresDateFormating(dateString):
     if 'T' not in dateString:
@@ -168,9 +174,7 @@ def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
     return json.dumps(jsondocs, encoding=encoding)
 
-
-
-def compareKeySimilarity ( fileDir, encoding = 'utf-8') :
+def compareKeySimilarity (fileDir) :
 
     union_feature_names = set()
     file_parsed_data = {}
@@ -192,7 +196,7 @@ def compareKeySimilarity ( fileDir, encoding = 'utf-8') :
 
     return sorted_resemblance_scores, file_parsed_data
 
-def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
+def compareValueSimilarity (fileDir, encoding = 'utf-8') :
     union_feature_names = set()
     file_parsed_data = {}
     resemblance_scores = {}
@@ -200,12 +204,16 @@ def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
 
     for filename in fileDir:
         file_parsed = []
-        # first compute the union of all features
         parsedData = parser.from_file(filename)
         file_metadata[filename] = parsedData["metadata"]
-        #get key : value of metadata
+
         for key in parsedData["metadata"].keys() :
-            file_parsed.append(str(key.encode('utf-8').strip() + ": " + parsedData["metadata"].get(key).encode('utf-8').strip()))
+            value = parsedData["metadata"].get(key)[0]
+            if isinstance(value, list):
+                value = ""
+                for meta_value in parsedData["metadata"].get(key)[0]:
+                    value += meta_value
+            file_parsed.append(str(key.strip(' ').encode(encoding) + ": " + value.strip(' ').encode(encoding)))
 
 
         file_parsed_data[filename] = set(file_parsed)
@@ -221,14 +229,14 @@ def compareValueSimilarity ( fileDir, encoding = 'utf-8') :
     sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
     return sorted_resemblance_scores, file_metadata
 
-def convertKeyUnicode( fileDict, key = None) :
+def convertKeyUnicode(fileDict, encoding = 'utf-8') :
     fileUTFDict = {}
     for key in fileDict.keys():
         if isinstance(key, unicode) :
-            key = key.encode('utf-8').strip()
+            key = key.encode(encoding).strip()
         value = fileDict.get(key)
         if isinstance(value, unicode) :
-            value = value.encode('utf-8').strip()
+            value = value.encode(encoding).strip()
         fileUTFDict[key] = value
         
     return str(fileUTFDict)
@@ -237,7 +245,7 @@ def generateCluster( similarity_score, threshold = 0.01) :
     prior = None
     clusters = []
     clusterCount = 0
-    cluster = {"name":"cluster"+str(clusterCount)}
+    cluster = {"name":"cluster" + str(clusterCount)}
     clusterData = []
     for line in similarity_score:
         if "Resemblance" in line:
@@ -253,7 +261,6 @@ def generateCluster( similarity_score, threshold = 0.01) :
         else:
             diff = -1.0
 
-        # cleanse the \n
         featureDataList[1] = featureDataList[1].strip()
         if(len(featureDataList) == 4):
             featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "path" :featureDataList[2],  "metadata" : featureDataList[3]}
@@ -264,14 +271,13 @@ def generateCluster( similarity_score, threshold = 0.01) :
             cluster["children"] = clusterData
             clusters.append(cluster)
             clusterCount = clusterCount + 1
-            cluster = {"name":"cluster"+str(clusterCount)}
+            cluster = {"name":"cluster" + str(clusterCount)}
             clusterData = []
             clusterData.append(featureData)
             prior = float(featureDataList[1])
         else:
             clusterData.append(featureData)
             prior = float(featureDataList[1])
-            #print featureDataList[2]
             
     #add the last cluster into clusters
     cluster["children"] = clusterData
@@ -282,8 +288,107 @@ def generateCluster( similarity_score, threshold = 0.01) :
     clusterStruct = {"name":"clusters", "children":clusters}
     return clusterStruct
 
-def _createOrAppendToList(doc, key, val):
-    if key in doc:
-        doc[key].append(val)
-    else:
-        doc[key] = [val]
+def generateCirclePacking(similarity_score, threshold = 0.01) :
+    prior = None
+    clusters = []
+    clusterCount = 0
+    cluster = {"name":"cluster" + str(clusterCount)}
+    clusterData = []
+    for line in similarity_score:
+        if "Resemblance" in line:
+            continue
+        featureDataList = line.split("{", 1)
+        metadata = '{' + featureDataList[1]
+        featureDataList = featureDataList[0].rsplit(",", 3)
+        featureDataList.remove('')
+        featureDataList[2] = metadata
+
+        if prior != None:
+            diff = prior-float(featureDataList[1])
+        else:
+            diff = -1.0
+
+        featureDataList[1] = featureDataList[1].strip()
+        if(len(featureDataList) == 4):
+            featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "path" :featureDataList[2],  "metadata" : featureDataList[3]}
+        elif (len(featureDataList) == 3):
+            featureData = {"name":featureDataList[0], "score":float(featureDataList[1]), "path" :featureDataList[2]}
+
+        if diff > threshold:
+            cluster["children"] = circle(clusterData)
+            clusters.append(cluster)
+            clusterCount = clusterCount + 1
+            cluster = {"name":"cluster" + str(clusterCount)}
+            clusterData = []
+            clusterData.append(featureDataList[2])
+            prior = float(featureDataList[1])
+        else:
+            clusterData.append(featureDataList[2])
+            prior = float(featureDataList[1])
+
+    #add the last cluster into clusters
+    cluster["children"] = circle(clusterData)
+    clusters.append(cluster)
+    clusterCount = clusterCount + 1
+    cluster = {"name":"cluster"+str(clusterCount)}
+
+    clusterStruct = {"name":"clusters", "children":clusters}
+    return clusterStruct
+
+def circle( metadataLists) : 
+    metadataList = []
+    circles = set()
+    for line in metadataLists:
+        metadata = ast.literal_eval(line)
+        for item in metadata.keys():
+            if item not in circles :
+                circles.add(item)
+                circle = {}
+                circle["name"] = item
+                circle["size"] = 1
+                metadataList.append(circle)
+            else :
+                for value in metadataList:
+                    if item  == value["name"]:
+                        count = value["size"]
+                        index = metadataList.index(value)
+                        metadataList.remove(value)
+                        circle = {}
+                        circle["name"] = item
+                        circle["size"] = count +1
+                        metadataList.insert(index, circle)
+    return metadataList
+
+def generateLevelCluster(clusterStruct, maxNumberOfNode = 10):
+    data = json.loads(clusterStruct)
+    numOfCluster = len(data["children"])
+    for i in range(0, numOfCluster):
+        numOfPic = len(data["children"][i]["children"])
+        if numOfPic > maxNumberOfNode:
+            level = levelNum(data["children"][i]["children"], maxNumberOfNode)
+            for j in range(1, level): 
+                clusterChildren = generateLevel(data["children"][i]["children"], maxNumberOfNode)
+                data["children"][i]["children"] = clusterChildren
+    return data
+
+def levelNum(data, maxNumberOfNode = 10):
+    cluster = {}
+    level = 1
+    numOfChildren = len(data)
+    while numOfChildren / maxNumberOfNode > 0:
+        numOfChildren = numOfChildren / maxNumberOfNode
+        level = level + 1
+    return level
+
+def generateLevel(data, maxNumberOfNode = 10):
+    clusters = []
+    numOfChildren = len(data)
+    numOfGroup = numOfChildren / maxNumberOfNode
+    for i in range(0, numOfGroup+1) :
+        clusterData = []
+        clusterGroupData = {}
+        for j in range(maxNumberOfNode*i, min(maxNumberOfNode*(i+1), numOfChildren)):
+            clusterData.append(data[j])
+        clusterGroupData = {"name" : "group"+str(i), "children" : clusterData}
+        clusters.append(clusterGroupData)
+    return clusters
