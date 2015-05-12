@@ -46,7 +46,7 @@ Options:
 -f, --directory [path to directory]
     read similarity-scores.txt file from this directory
 -c, --file [file1 file2]
-    compare two given files
+    compare given files
 -v, --verbose
     Work verbosely rather than silently.
 -h --help
