@@ -130,8 +130,6 @@ def main(argv = None):
                 elif '--file' in argv:
                     index = argv.index('--file')
                 filenames = argv[1+index : ]
-                if len(filenames) > 2:
-                    raise _Usage("you can only compare two files")
 
             if('-f' in argv) or ('--directory' in argv) :
                 if '-f' in argv:
