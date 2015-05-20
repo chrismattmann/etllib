@@ -100,7 +100,7 @@ setup(
     install_requires=[
         'setuptools',
         'iso8601',
-        'python-magic'
+        'python-magic',
         'tika>=1.8.4'
     ], 
     extras_require={
