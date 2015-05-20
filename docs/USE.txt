@@ -22,12 +22,9 @@ computer:
 ``translatejson`` command
     Takes an input JSON file and a column header file and cred file and translates from 
     source lang to dest lang using Bing's API and Apache Tika.
-``similarity`` command
+``imagesimilarity`` command
     Computes the similarity between a directory full of image files using a feature-based 
-    approach based on Jaccard's algorithm.
-``clusterscores`` command
-    Clusters similarity scores and outputs a Data Driven Documents (D3) compatible JSON 
-    representation of the clusters.    
+    approach based on Jaccard's algorithm. Clusters scores. Uses Tika.
     
     
 ETLlib Library
@@ -44,7 +41,7 @@ Commands
 
 After installing the ETLlib package,  new commands are made available on
 your system, ``repackage`` and ``poster`` and ``repackageandpost`` and 
-``tsvtojson`` and ``translatejson`` and ``similiarity`` and ``clusterscores``.  
+``tsvtojson`` and ``translatejson`` and ``imagesimiliarity``..  
 These commands enable you to reformulate 
 aggregate  JSON documents, cleanse their fields (which may contain UTF-8 or other 
 weird encodings), convert from different formats (e.g., TSV to JSON), translate 
@@ -77,7 +74,7 @@ Use from Shell Scripts
 ----------------------
 
 The ``repackage`` and ``poster`` and ``repackageandpost`` and ``tsvtojson`` and
-``translatejson`` and ``similarity`` and ``clusterscores`` commands  may be used 
+``translatejson`` and ``imagesimilarity`` commands  may be used 
 from shell scripts as well.  The only 
 requirement for making these  commands available to shell scripts is the same as 
 for interactive sessions:  the shell's PATH environment variable must include the 
@@ -122,11 +119,8 @@ translatejson -i data/jobs/repackager/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716
 
 Compute the similarity of images in your $HOME/Pictures directory on Mac:
 
-cd $HOME/Pictures && similarity -m -f . > similarity-scores.txt
+cd $HOME/Pictures && imagesimilarity -m -f . > similarity-scores.txt
 
-Cluster a previously generated similarity score text file generated for the $HOME/Picutres directory on Mac and create a clusters.json file in the current directory:
-
-clusterscores -f $HOME/Pictures/ -o .
 
 ETLlib Library
 ===========
@@ -134,7 +128,7 @@ ETLlib Library
 The ETLlib Library is a Python-based application programming interface (API) for
 munging and processing  JSON data for ETL and analytics. In fact, the commands 
 ``poster`` and ``repackage`` and ``repackageandpost`` and ``tsvtojson`` and ``translatejson`` 
-and ``similarity`` and ``clusterscores`` are implemented using the ETLlib Library.  If 
+and ``imagesimilarity`` are implemented using the ETLlib Library.  If 
 shell-script programming is not to your taste, and you
 know Python, then using the ETLlib Library may be right for you.
 

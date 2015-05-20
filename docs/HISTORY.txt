@@ -1,6 +1,17 @@
 Changelog
 *********
 
+0.0.2 - Refactor to use new Python-Tika lib
+===========================================
+
+Current Development.
+
+
+0.0.1 - Updated to include ClusterScores and Image Similarity
+=============================================================
+
+Includes tools to handle image similarity.
+
 0.0.0 - Initial
 ===============
 
