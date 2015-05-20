@@ -89,8 +89,7 @@ setup(
             'repackageandpost = etl.repackageandpost:main [Tika]',
             'tsvtojson = etl.tsvtojson:main',
             'translatejson = etl.translatejson:main [Tika]',
-            'clusterscores = etl.clusterscores:main [Tika]',
-            'similiarity = etl.similiarity:main [Tika]'
+            'imagesimilarity = etl.imagesimilarity:main [Tika]'
         ],
     }, 
     package_data = {
@@ -104,5 +103,6 @@ setup(
         'tika>=1.8.4'
     ], 
     extras_require={
+         'Tika': ['tika>=1.8.7']
     },
 )
