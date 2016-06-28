@@ -29,6 +29,7 @@ import os
 import operator
 import ast
 import sys
+import re
 
 try:
     import tika
@@ -137,10 +138,10 @@ def _createOrAppendToList(doc, key, val):
         
 def requiresDateFormating(dateString):
     if 'T' not in dateString:
-        if  re.search('^\d{4}-\d{2}-\d{2}$', dateString) == None:
+        if  re.search('^\d{4}-\d{1,2}-\d{1,2}$', dateString) == None:
             raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
         return True
-    if  re.search('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
+    if  re.search('^\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
         raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
     return False
 
@@ -148,7 +149,7 @@ def formatDate(theDoc):
     for key in theDoc.iterkeys():
         if "date" in key.lower():
             value = theDoc[key]
-            if requiresDateFormating(value):
+            if value != None and value != "" and requiresDateFormating(value):
                 theDoc[key] = value+"T00:00:00.000Z"
         
 def postJsonDocToSolr(solrUrl, data):

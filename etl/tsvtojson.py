@@ -72,6 +72,55 @@ class _Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+def collect(dicts):
+    unique_feats = set()
+    for d in dicts:
+        unique_feats.update(set(d.values()))
+
+    return unique_feats
+
+def near_dedup_jaccard(dicts,threshold=0.1):
+    all_features = collect(dicts) #set 
+    # compute jaccard score
+    jac_key = "jaccard_score"
+    for d in dicts:
+        d_feats = set()
+        d_feats.update(set(d.values()))
+        jaccard_score = float(len(d_feats & all_features)) / float(len(all_features))
+        d[jac_key] = jaccard_score
+
+    sorted_d = sorted(dicts, key=lambda k: k[jac_key], reverse=True) 
+    dedup = list()
+    pivot = sorted_d[0]
+    dedup.append(pivot)
+    dropped = 0
+
+    for i in range(1, len(sorted_d)-1):
+        d = sorted_d[i]
+        d_feats = set()
+        d_feats.update(set(d.values()))
+
+        pivot_feats = set()
+        pivot_feats.update(set(pivot.values()))
+
+        score_diff = float(len(pivot_feats & d_feats)) / float(len(pivot_feats | d_feats)) # resemblance of pivot to d
+        if score_diff < threshold:
+            pivot = d
+            dedup.append(pivot)
+        else:
+            dropped = dropped + 1
+        
+    verboseLog("Filtered "+str(dropped)+" near duplicates.")
+
+    return dedup
+    
+    
+
+def dedup(dicts):
+    unique_sets = set(frozenset(d.items()) for d in dicts)
+    unique_dicts = [dict(s) for s in unique_sets]
+    return unique_dicts
+
 def main(argv=None):
    if argv is None:
      argv = sys.argv
@@ -180,6 +229,12 @@ def main(argv=None):
                 else:
                     jsonStructs.append(jsonStruct)
         
+       verboseLog("Deduping list of structs. Count: ["+str(len(jsonStructs))+"]")
+       jsonStructs = dedup(jsonStructs)
+       verboseLog("After dedup. Count: ["+str(len(jsonStructs))+"]")
+       verboseLog("Near duplicates detection.")
+       jsonStructs = near_dedup_jaccard(jsonStructs)
+       verboseLog("After near duplicates. Count: ["+str(len(jsonStructs))+"]")
        jsonWrapper = {objectType : jsonStructs}
        outFile = open(jsonFilePath, "wb")
        verboseLog("Writing output file: ["+jsonFilePath+"]")
