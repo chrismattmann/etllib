@@ -16,9 +16,9 @@ repackageandpost
 tsvtojson
     Takes an input TSV file and parses it with a set of column headers and outputs a JSON file.
 translatejson
-    Takes an input JSON file and a column header file and cred file and translates from source lang to dest lang using Bing's API and Apache Tika.
-imagesimilarity
-    Computes the similarity between a directory full of image files using a feature-based approach based on Jaccard's algorithm. Also clusters scores. Depends on Tika.
+    Takes an input JSON file and a column header file and cred file and translates from source lang to dest lang using Apache Tika.
+similarity
+    Computes the similarity between a directory full of files using a feature-based approach based on Jaccard's algorithm. Also clusters scores. Depends on Tika.
 ```
 
 Installation
@@ -39,33 +39,15 @@ $ brew install libmagic
 
 After brew finished installing, the test for the libmagic man page should pass.
 
-
-
-With Tika
----
-For Tika support you will need to install [tika-python](https://github.com/chrismattmann/tika-python) and its dependencies first. Once you have that installed, you can install ETLlib with Tika support using the following commands:
+Run the following commands to install ETLLib.
 
 ```
 git clone https://github.com/chrismattmann/etllib.git
 cd etllib
-python bootstrap.py
-bin/buildout install with-tika
+python setup.py install
 ```
 
 The `bin` directory will be populated with the various command-line tools.
-
-
-Without Tika
----
-To install without Tika support simply run the following commands:
-
-```
-python bootstrap.py
-bin/buildout install without-tika
-```
-
-The `bin` directory will be populated with the various command-line tools.
-
 
 License
 ====

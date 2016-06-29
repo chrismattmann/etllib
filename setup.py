@@ -31,7 +31,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-version = '0.0.2'
+version = '1.0'
 
 _descr = u'''**********
 etllib
@@ -68,7 +68,7 @@ open('doc.txt', 'w').write(long_description)
 setup(
     name='etllib',
     version=version,
-    description='Extract, Transform and Load lib',
+    description='Extract, Transform and Load library.',
     long_description=long_description,
     classifiers=_classifiers,
     keywords=_keywords,
@@ -78,31 +78,24 @@ setup(
     download_url='http://github.com/chrismattmann/etllib',
     license=read('docs', 'LICENSE.txt'),
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['etl'],
     include_package_data=True,
     zip_safe=True,
     test_suite='etl.tests',
     entry_points={
         'console_scripts': [
             'poster = etl.poster:main',
-            'repackage = etl.repackage:main [Tika]',
-            'repackageandpost = etl.repackageandpost:main [Tika]',
+            'repackage = etl.repackage:main',
+            'repackageandpost = etl.repackageandpost:main',
             'tsvtojson = etl.tsvtojson:main',
-            'translatejson = etl.translatejson:main [Tika]',
-            'imagesimilarity = etl.imagesimilarity:main [Tika]'
+            'translatejson = etl.translatejson:main',
+            'similarity = etl.similarity:main'
         ],
     }, 
-    package_data = {
-        # And include any *.conf files found in the 'conf' subdirectory
-        # for the package
-    },
     install_requires=[
         'setuptools',
         'iso8601',
         'python-magic',
-        'tika>=1.13'
-    ], 
-    extras_require={
-         'Tika': ['tika>=1.8.7']
-    },
+        'tika>=1.13',
+        'hirlite'
+    ]
 )
