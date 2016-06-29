@@ -26,7 +26,7 @@ from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnico
 _verbose = False
 _helpMessage = '''
 
-Usage: imagesimilarity [-v --verbose] [-h --help] <operation> [--threshold <threshold>] [--maxnode <maxNumberOfNode>] [-f --directory <directory of images>] [-c --file <file1 file2>] 
+Usage: similarity [-v --verbose] [-h --help] <operation> [--threshold <threshold>] [--maxnode <maxNumberOfNode>] [-f --directory <directory of files>] [-c --file <file1 file2>] 
 
 Operation:
 DEFAULT IS --key
@@ -53,14 +53,14 @@ Options:
     show help on the screen
 
 Example:
-imagesimilarity.py -f [directory of images]
-imagesimilarity.py -o [directory of output files] -f [directory of images]
-imagesimilarity.py --key  --threshold [threshold] -f [directory of images]
-imagesimilarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -f [directory of images]
-imagesimilarity.py -c [file1 file2]
-imagesimilarity.py -o [directory of output files] -c [file1 file2]
-imagesimilarity.py --key  --threshold [threshold] -c [file1 file2]
-imagesimilarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -c [file1 file2]
+similarity.py -f [directory of files]
+similarity.py -o [directory of output files] -f [directory of files]
+similarity.py --key  --threshold [threshold] -f [directory of files]
+similarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -f [directory of files]
+similarity.py -c [file1 file2]
+similarity.py -o [directory of output files] -c [file1 file2]
+similarity.py --key  --threshold [threshold] -c [file1 file2]
+similarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -c [file1 file2]
 
 '''
 
