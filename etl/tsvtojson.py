@@ -38,7 +38,7 @@ from etllib import readEncodedVal
 _verbose = False
 _guessEncoding = False
 _helpMessage = '''
-Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field] [-e encoding file]
+Usage: tsvtojson [-v] [-t tsv file] [-j json file] [-o object type] [-c column headers txt file] [-u unique field] [-e encoding file] [-s threshold]
 
 Options:
 -t tsv file, --tsv=file
@@ -51,6 +51,8 @@ Options:
     Wrap the list of objects for each row in the TSV file in the named JSON object type.    
 -u unique field --unique=field
     Identifies a unique field per record in the TSV so that duplicate JSON files are not created.
+-s threshold --threshold=value
+    Sets the threshold for similarity for near duplicate detection. A threshold of .1 means files found to be 10% similar will be identified as duplicates.
 -v, --verbose
     Work verbosely rather than silently.
 -e, --encoding
@@ -127,7 +129,7 @@ def main(argv=None):
 
    try:
        try:
-          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:u:e:',['help', 'verbose', 'tsv=','json=','cols=','object=', 'unique=', 'encoding='])
+          opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:u:e:s:',['help', 'verbose', 'tsv=','json=','cols=','object=', 'unique=', 'encoding=', 'threshold='])
        except getopt.error, msg:
          raise _Usage(msg)    
      
@@ -143,6 +145,7 @@ def main(argv=None):
        objectType = None
        uniqueField = None
        encodingFilePath = None
+       threshold = None
       
        for option, value in opts:
           if option in ('-h', '--help'):
@@ -157,6 +160,8 @@ def main(argv=None):
               objectType = value     
           elif option in ('-u', '--unique'):
               uniqueField = value   
+          elif option in ('-s', '--threshold'):
+              threshold = float(value)
           elif option in ('-v', '--verbose'):
              global _verbose
              _verbose = True
@@ -172,6 +177,9 @@ def main(argv=None):
           errorString.append("Error: wrong/missing column headers")
        if objectType == None:
            errorString.append("Error: None object type passed")
+       if threshold == None:
+           errorString.append("Threshold must be set to a value between 0.0 and 1.0")
+
        if len(errorString) > 0:
           raise _Usage(_helpMessage + '\n' + '\n'.join(errorString)) 
 
@@ -233,7 +241,7 @@ def main(argv=None):
        jsonStructs = dedup(jsonStructs)
        verboseLog("After dedup. Count: ["+str(len(jsonStructs))+"]")
        verboseLog("Near duplicates detection.")
-       jsonStructs = near_dedup_jaccard(jsonStructs)
+       jsonStructs = near_dedup_jaccard(jsonStructs, threshold)
        verboseLog("After near duplicates. Count: ["+str(len(jsonStructs))+"]")
        jsonWrapper = {objectType : jsonStructs}
        outFile = open(jsonFilePath, "wb")
