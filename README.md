@@ -23,9 +23,7 @@ similarity
 
 Installation
 ====
-ETLlib can be installed with or without Tika support. Please check the relevant section below for more details.
-
-libmagic library will need to be availabile. To test this is the check for the presence of the file command and/or the libmagic man page.
+The libmagic library is required to use ETLLib. To test this is the check for the presence of the file command and/or the libmagic man page.
 
 ```
 $ man libmagic
