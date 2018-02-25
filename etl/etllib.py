@@ -83,7 +83,7 @@ def cleanseBody(theDoc):
 
 def readEncodedVal(line, colnum, encodings=None):
     val = None
-    if encodings != None:
+    if encodings != None and len(encodings) > 0:
         for encoding in encodings:
             try:
                 val = line[colnum].decode(encoding).encode("utf-8")
