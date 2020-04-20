@@ -99,17 +99,18 @@ def readEncodedVal(line, colnum, encodings=None):
 
 
 def convertToUTF8(src):
+    global val2
     try:
         encoding = _theMagic.from_buffer(src)
-        val = src.decode(encoding).encode("utf-8")
+        val2 = src.decode(encoding).encode("utf-8")
     except magic.MagicException, err:
-        verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
-        val = src
+        verboseLog("Error detecting encoding for row val2: ["+src+"]: Message: "+str(err))
+        val2 = src
     except LookupError, err:
         verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
-        val = src
+        val2 = src
     finally:
-        return val
+        return val2
 
 def unravelStructs(theDoc):
     if "countries" in theDoc:
