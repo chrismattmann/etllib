@@ -21,7 +21,7 @@ import json
 import getopt
 import sys
 import os
-from etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, generateCirclePacking, generateCluster, generateLevelCluster
+from etl.etllib import compareKeySimilarity, compareValueSimilarity, convertKeyUnicode, generateCirclePacking, generateCluster, generateLevelCluster
 
 _verbose = False
 _helpMessage = '''
@@ -81,7 +81,7 @@ def main(argv = None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], 'f:c:t:o:vhkrm:', ['directory=', 'file=', 'threshold=', 'output=', 'verbose', 'help', 'key', 'value', 'maxnode='])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise _Usage(msg)
 
         if len(opts) ==0:
@@ -174,7 +174,7 @@ def main(argv = None):
         with open(os.path.join(output_dir, "circle.json"), "w") as f:
             f.write(json.dumps(circlePackingStruct, sort_keys=True, indent=4, separators=(',', ': ')))
 
-    except _Usage, err:
+    except _Usage as err:
         print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
         return 2
 

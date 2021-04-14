@@ -27,7 +27,7 @@
 # Things to update/fix:
 
 
-from etllib import prepareDocs, cleanseBody, cleanseImage, unravelStructs, formatDate, prepareDocForSolr, postJsonDocToSolr
+from etl.etllib import prepareDocs, cleanseBody, cleanseImage, unravelStructs, formatDate, prepareDocForSolr, postJsonDocToSolr
 import getopt
 import sys
 import os
@@ -69,7 +69,7 @@ def main(argv=None):
    try:
        try:
           opts, args = getopt.getopt(argv[1:],'hvu:o:',['help', 'verbose', 'url=', 'object='])
-       except getopt.error, msg:
+       except getopt.error as msg:
          raise _Usage(msg)    
      
        if len(opts) == 0:
@@ -111,7 +111,7 @@ def main(argv=None):
                postJsonDocToSolr(solrUrl, postString)
 
     
-   except _Usage, err:
+   except _Usage as err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
 

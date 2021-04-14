@@ -22,7 +22,10 @@
 # Description: A suite of functions for munging data in preparation
 # for loading into Solr using Tika and other goodies (JSON parsing, etc.)
 
-import urllib2
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 import json
 import os
@@ -102,10 +105,10 @@ def convertToUTF8(src):
     try:
         encoding = _theMagic.from_buffer(src)
         val = src.decode(encoding).encode("utf-8")
-    except magic.MagicException, err:
+    except magic.MagicException as err:
         verboseLog("Error detecting encoding for row val: ["+src+"]: Message: "+str(err))
         val = src
-    except LookupError, err:
+    except LookupError as err:
         verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
         val = src
     finally:
@@ -153,13 +156,13 @@ def formatDate(theDoc):
                 theDoc[key] = value+"T00:00:00.000Z"
         
 def postJsonDocToSolr(solrUrl, data):
-    print "POST "+solrUrl
+    print("POST "+solrUrl)
     req = urllib2.Request(solrUrl, data, {'Content-Type': 'application/json'})
     try:
         f = urllib2.urlopen(req)
-        print f.read()
-    except urllib2.HTTPError, (err):
-        print "HTTP error(%s)" % (err)
+        print(f.read())
+    except urllib2.HTTPError as err:
+        print("HTTP error(%s)" % err)
 
 
 def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):

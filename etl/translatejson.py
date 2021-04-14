@@ -76,7 +76,7 @@ def main(argv=None):
    try:
        try:
           opts, args = getopt.getopt(argv[1:],'hvj:c:f:t:i:r:',['help', 'verbose','json=','cols=','from=','to=','injson=', 'rlite='])
-       except getopt.error, msg:
+       except getopt.error as msg:
          raise _Usage(msg)    
      
        if len(opts) == 0:
@@ -132,13 +132,13 @@ def main(argv=None):
                jsonStruct[col] = translated
                
            else:
-               print "column ["+col+"] not present in json file: ["+inputJsonFilePath+"]"
+               print("column ["+col+"] not present in json file: ["+inputJsonFilePath+"]")
     
        outFile = open(outputJsonFilePath, "wb")
        verboseLog("Writing output file: ["+outputJsonFilePath+"]")
        json.dump(jsonStruct, outFile, encoding="utf-8")             
 
-   except _Usage, err:
+   except _Usage as err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
 

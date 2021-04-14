@@ -26,7 +26,7 @@
 import os
 import sys
 import getopt
-from etllib import prepareDocForSolr, postJsonDocToSolr
+from etl.etllib import prepareDocForSolr, postJsonDocToSolr
 
 _verbose = False
 _helpMessage = '''
@@ -59,7 +59,7 @@ def main(argv=None):
    try:
        try:
           opts, args = getopt.getopt(argv[1:],'hvu:d:',['help', 'verbose', 'url=', 'directory='])
-       except getopt.error, msg:
+       except getopt.error as msg:
          raise _Usage(msg)    
      
        if len(opts) == 0:
@@ -88,7 +88,7 @@ def main(argv=None):
            postString = prepareDocForSolr(jsonContents)
            verboseLog(postString)
            postJsonDocToSolr(solrUrl, postString)
-   except _Usage, err:
+   except _Usage as err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
 

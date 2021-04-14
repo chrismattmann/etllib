@@ -27,7 +27,7 @@
 import sys
 import os
 import getopt
-from etllib import cleanseImage, cleanseBody, unravelStructs, formatDate, prepareDocs, writeDoc
+from etl.etllib import cleanseImage, cleanseBody, unravelStructs, formatDate, prepareDocs, writeDoc
 
 _verbose = False
 _helpMessage = '''
@@ -60,7 +60,7 @@ def main(argv=None):
    try:
        try:
           opts, args = getopt.getopt(argv[1:],'hvj:o:',['help', 'verbose', 'json=', 'object='])
-       except getopt.error, msg:
+       except getopt.error as msg:
          raise _Usage(msg)    
      
        if len(opts) == 0:
@@ -100,7 +100,7 @@ def main(argv=None):
         verboseLog("Writing json file: ["+filePath+"]")
         writeDoc(obj, filePath)
     
-   except _Usage, err:
+   except _Usage as err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
 

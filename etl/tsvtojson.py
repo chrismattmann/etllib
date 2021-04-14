@@ -33,7 +33,7 @@ import sys
 import getopt
 import uuid
 import os
-from etllib import readEncodedVal
+from etl.etllib import readEncodedVal
 
 _verbose = False
 _guessEncoding = False
@@ -61,13 +61,13 @@ Options:
 
 def verboseLog(message):
     if _verbose:
-        print >>sys.stderr, message
+        print(message)
         
 def checkFilePath(filePath, checkPath=True):
     if checkPath:
-        return filePath <> None and os.path.isfile(filePath)
+        return filePath != None and os.path.isfile(filePath)
     else:
-        return filePath <> None and not os.path.exists(filePath)
+        return filePath != None and not os.path.exists(filePath)
 
 class _Usage(Exception):
     '''An error for problems with arguments on the command line.'''
@@ -130,7 +130,7 @@ def main(argv=None):
    try:
        try:
           opts, args = getopt.getopt(argv[1:],'hvt:j:c:o:u:e:s:',['help', 'verbose', 'tsv=','json=','cols=','object=', 'unique=', 'encoding=', 'threshold='])
-       except getopt.error, msg:
+       except getopt.error as msg:
          raise _Usage(msg)    
      
        if len(opts) == 0:
@@ -183,7 +183,7 @@ def main(argv=None):
        if len(errorString) > 0:
           raise _Usage(_helpMessage + '\n' + '\n'.join(errorString)) 
 
-       _guessEncoding = encodingFilePath <> None
+       _guessEncoding = encodingFilePath != None
        if _guessEncoding:
            if checkFilePath(encodingFilePath):
                with open(encodingFilePath) as encodingFile:
@@ -197,7 +197,7 @@ def main(argv=None):
            verboseLog(cols)
            
        with open (tsvFilePath) as tsv:
-            if uniqueField <> None:
+            if uniqueField != None:
                 fieldCache = {}
                 
             for line in csv.reader(tsv, dialect="excel-tab"):
@@ -211,7 +211,7 @@ def main(argv=None):
                         diff = diff - 1
                         continue                    
                     
-                    if line[num] <> None and line[num].lstrip() <> '':
+                    if line[num] != None and line[num].lstrip() != '':
                         val = readEncodedVal(line, num, encodings)
                     else:
                         val = ''
@@ -225,7 +225,7 @@ def main(argv=None):
                     id = uuid.uuid4()
                     jsonStruct["id"] = str(id)
                             
-                if uniqueField <> None:
+                if uniqueField != None:
                     if uniqueField in jsonStruct:
                         if not jsonStruct[uniqueField] in fieldCache:
                             jsonStructs.append(jsonStruct)
@@ -248,8 +248,8 @@ def main(argv=None):
        verboseLog("Writing output file: ["+jsonFilePath+"]")
        json.dump(jsonWrapper, outFile, encoding="utf-8")             
 
-   except _Usage, err:
-       print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
+   except _Usage as err:
+       print(sys.argv[0].split('/')[-1] + ': ' + str(err.msg))
        return 2
 
 if __name__ == "__main__":
