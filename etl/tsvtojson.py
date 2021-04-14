@@ -244,9 +244,9 @@ def main(argv=None):
        jsonStructs = near_dedup_jaccard(jsonStructs, threshold)
        verboseLog("After near duplicates. Count: ["+str(len(jsonStructs))+"]")
        jsonWrapper = {objectType : jsonStructs}
-       outFile = open(jsonFilePath, "wb")
+       outFile = open(jsonFilePath, "w")
        verboseLog("Writing output file: ["+jsonFilePath+"]")
-       json.dump(jsonWrapper, outFile, encoding="utf-8")             
+       json.dump(jsonWrapper, outFile)             
 
    except _Usage as err:
        print(sys.argv[0].split('/')[-1] + ': ' + str(err.msg))

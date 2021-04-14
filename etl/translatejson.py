@@ -55,7 +55,7 @@ def initRLite(the_path='./translation.rdb'):
 
 def verboseLog(message):
     if _verbose:
-        print >>sys.stderr, message
+        print(message)
 
 def cacheTranslation(original, translated):
     global _rlite
@@ -139,7 +139,7 @@ def main(argv=None):
        json.dump(jsonStruct, outFile, encoding="utf-8")             
 
    except _Usage as err:
-       print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
+       print(sys.argv[0].split('/')[-1] + ': ' + str(err.msg))
        return 2
 
 

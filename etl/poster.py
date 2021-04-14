@@ -46,7 +46,7 @@ STDIN
         
 def verboseLog(message):
     if _verbose:
-        print >>sys.stderr, message
+        print(message)
 
 class _Usage(Exception):
     '''An error for problems with arguments on the command line.'''
@@ -89,7 +89,7 @@ def main(argv=None):
            verboseLog(postString)
            postJsonDocToSolr(solrUrl, postString)
    except _Usage as err:
-       print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
+       print(sys.argv[0].split('/')[-1] + ': ' + str(err.msg))
        return 2
 
 if __name__ == "__main__":
