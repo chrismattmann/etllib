@@ -66,7 +66,7 @@ similarity.py --threshold [threshold] --maxnode [maxNumberOfNode] -c [file1 file
 
 def verboseLog(message):
     if _verbose:
-        print >>sys.stderr, message
+        print(message)
 
 class _Usage(Exception):
     ''' an error for arguments '''
@@ -175,7 +175,7 @@ def main(argv = None):
             f.write(json.dumps(circlePackingStruct, sort_keys=True, indent=4, separators=(',', ': ')))
 
     except _Usage as err:
-        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
+        print(sys.argv[0].split('/')[-1] + ': ' + str(err.msg))
         return 2
 
 

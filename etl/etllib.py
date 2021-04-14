@@ -43,6 +43,7 @@ except ImportError:
 
 import magic
 _theMagic = magic.Magic(mime_encoding=True)
+val=None
 
 def prepareDocs(jsondata, objectType):
     jsondoc = json.loads(jsondata)
@@ -111,6 +112,8 @@ def convertToUTF8(src):
     except LookupError as err:
         verboseLog("unknown encoding: binary:"+src+":Message:"+str(err))
         val = src
+    except:
+        val = src
     finally:
         return val
 
@@ -172,11 +175,11 @@ def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     else:
         boost = 1.0
     jsonwrapper = {"add": {"boost": boost, "doc": jsondoc}}
-    return json.dumps(jsonwrapper, encoding=encoding)
+    return json.dumps(jsonwrapper)
 
 def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
-    return json.dumps(jsondocs, encoding=encoding)
+    return json.dumps(jsondocs)
 
 def compareKeySimilarity (fileDir) :
 
