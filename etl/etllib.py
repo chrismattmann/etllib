@@ -201,7 +201,7 @@ def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
 def jsonOrParseWithTika(filename):
     jsonDoc = None
     mimeType = detector.from_file(filename)
-    if mimeType == "application/json":
+    if mimeType == "application/json" or filename.endswith(".json"):
         with open(filename, 'r') as jf:
             jsonDoc = json.load(jf)
     else:
@@ -246,17 +246,16 @@ def compareValueSimilarity (fileDir, encoding = 'utf-8') :
                 value = ""
                 for meta_value in file_metadata[filename].get(key)[0]:
                     value += str(meta_value)
-                value = value.encode(encoding)
                     
             else:
                 val = file_metadata[filename].get(key)
-                if isinstance(val, unicode) or isinstance(val, str):
+                if hasattr(val, "encode"):
                     val = val.encode("ascii", "ignore")
                     value = val.decode(encoding)
                 else:
-                    value = str(val).decode(encoding)
+                    value = str(val)
 
-            file_parsed.append(str(key.strip(' ').encode(encoding) + ": " + value.strip(' ').encode(encoding)))
+            file_parsed.append(str(key.strip(' ') + ": " + value.strip(' ')).encode(encoding))
             
 
         file_parsed_data[filename] = set(file_parsed)
@@ -275,6 +274,9 @@ def compareValueSimilarity (fileDir, encoding = 'utf-8') :
     return sorted_resemblance_scores, file_metadata
 
 def convertKeyUnicode(fileDict, encoding = 'utf-8') :
+    if sys.version_info[0] >= 3:
+        return str(fileDict) # no conversion since it's already unicode
+    
     fileUTFDict = {}
     for key in fileDict.keys():
         if isinstance(key, unicode) :
