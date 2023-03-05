@@ -90,13 +90,21 @@ def readEncodedVal(line, colnum, encodings=None):
     if encodings != None and len(encodings) > 0:
         for encoding in encodings:
             try:
-                val = line[colnum].decode(encoding).encode("utf-8")
+
+                if hasattr(line[colnum], 'decode'):
+                    val = line[colnum].decode(encoding).encode("utf-8")
+                else:
+                    val = line[colnum]
+
             except UnicodeDecodeError:
                 if encoding != encodings[-1]:
                     continue
+
                 val = convertToUTF8(line[colnum])
+
             else:
                 break
+
     else:
         val = convertToUTF8(line[colnum])
     return val
@@ -152,11 +160,19 @@ def requiresDateFormating(dateString):
     return False
 
 def formatDate(theDoc):
-    for key in theDoc.iterkeys():
-        if "date" in key.lower():
-            value = theDoc[key]
-            if value != None and value != "" and requiresDateFormating(value):
-                theDoc[key] = value+"T00:00:00.000Z"
+
+    if hasattr(theDoc, 'iterkeys'):
+        for key in theDoc.iterkeys():
+            if "date" in key.lower():
+                value = theDoc[key]
+                if value != None and value != "" and requiresDateFormating(value):
+                    theDoc[key] = value+"T00:00:00.000Z"
+    else:
+        for key in theDoc:
+            if "date" in key.lower():
+                value = theDoc[key]
+                if value != None and value != "" and requiresDateFormating(value):
+                    theDoc[key] = value+"T00:00:00.000Z"        
         
 def postJsonDocToSolr(solrUrl, data):
     print("POST "+solrUrl)
