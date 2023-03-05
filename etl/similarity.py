@@ -95,49 +95,31 @@ def main(argv = None):
         flag = 1
         maxNumberOfNode = 10
 
-        for option in argv[1:]:
-            if option in ('--key') :
-                flag = 1 
-            elif option in ('--value') :
-                flag = 2 
+        for option, value in opts:
 
-        if ('-v'in argv) or ('--verbose' in argv):
-            global _verbose
-            _verbose = True
+            if option in ('--key'):
+                flag = 1
+            elif option in ('--value'):
+                flag = 2
 
-        elif ('-h'in argv) or ('--help' in argv):
-            raise _Usage(_helpMessage) 
-
-        else :
-            if ('--threshold' in argv):
-                index = argv.index('--threshold')
-                threshold = float(argv[index+1])
-
-            if ('--maxnode' in argv):
-                index = argv.index('--maxnode')
-                maxNumberOfNode = argv[index+1]
-
-            if ('-o'in argv) or ('--output' in argv):
-                if '-o' in argv :
-                    index = argv.index('-o')
-                elif '--output' in argv:
-                    index = argv.index('--output')
-                output_dir = argv[1+index]
-                
-            if ('-c'in argv) or ('--file' in argv):
-                if '-c' in argv:
-                    index = argv.index('-c')
-                elif '--file' in argv:
-                    index = argv.index('--file')
+            elif option in ('-v', '--verbose'):
+                global _verbose
+                _verbose = True
+            elif option in ('-h', '--help'):
+                raise _Usage(_helpMessage)
+            elif option in ('--threshold'):
+                threshold = float(value)
+            elif option in ('--maxnode'):
+                maxNumberOfNode = value
+            elif option in ('-o', '--output'):
+                output_dir = value
+            elif option in ('-c', '--file'):
+                index = argv.index('--file')
                 filenames = argv[1+index : ]
+            elif option in ('-f', '--directory'):
+                dirFile = value
+                filenames=[filename for filename in os.listdir(dirFile) if not filename.startswith('.')]                
 
-            if('-f' in argv) or ('--directory' in argv) :
-                if '-f' in argv:
-                    index = argv.index('-f')
-                elif '--directory' in argv:
-                    index = argv.index('--directory')
-                dirFile = argv[index+1]
-                filenames=[filename for filename in os.listdir(dirFile) if not filename.startswith('.')]
 
         #format the filenames
         filenames = [x.strip() for x in filenames]
@@ -154,13 +136,20 @@ def main(argv = None):
 
         similarity_score = []
         if flag == 1:
+            print("KEY BASED SIMILARITY")
             sorted_resemblance_scores, file_parsed_data = compareKeySimilarity(filename_list)
         elif flag ==2:
+            print("VALUE BASED SIMILARITY")
             sorted_resemblance_scores, file_parsed_data = compareValueSimilarity(filename_list)
 
         for tuple in sorted_resemblance_scores:
             similarity_score.append(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + tuple[0] + "," + convertKeyUnicode(file_parsed_data[tuple[0]])+'\n')
 
+        with open(os.path.join(output_dir, "similarity-scores.txt"), "w") as f:
+	    f.write("Resemblance : \n")
+	    for tuple in sorted_resemblance_scores:
+                f.write(os.path.basename(tuple[0].rstrip(os.sep)) + ","+str(tuple[1]) + "," + tuple[0] + "," + convertKeyUnicode(file_parsed_data[tuple[0]]) + '\n')
+            
         #generate cluster json
         clusterStruct = generateCluster(similarity_score, threshold)
         clusterStruct = json.dumps(clusterStruct, sort_keys=True, indent=4, separators=(',', ': '))

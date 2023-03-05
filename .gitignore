@@ -4,6 +4,7 @@
 .settings
 .pydevproject
 .pyc
+.python-version
 */*.pyc
 /etllib.egg-info
 /doc.txt

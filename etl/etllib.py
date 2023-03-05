@@ -37,6 +37,7 @@ import re
 try:
     import tika
     from tika import parser
+    from tika import detector
     tika_support = True
 except ImportError:
     tika_support = False
@@ -197,6 +198,19 @@ def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
     return json.dumps(jsondocs)
 
+def jsonOrParseWithTika(filename):
+    jsonDoc = None
+    mimeType = detector.from_file(filename)
+    if mimeType == "application/json":
+        with open(filename, 'r') as jf:
+            jsonDoc = json.load(jf)
+    else:
+        parsed = parser.from_file(filename)
+        jsonDoc = parsed["metadata"]
+
+    return jsonDoc
+
+
 def compareKeySimilarity (fileDir) :
 
     union_feature_names = set()
@@ -204,9 +218,8 @@ def compareKeySimilarity (fileDir) :
     resemblance_scores = {}
 
     for filename in fileDir:
-        parsedData = parser.from_file(filename)
-        file_parsed_data[filename] = parsedData["metadata"]
-        union_feature_names = union_feature_names | set(parsedData["metadata"].keys())
+        file_parsed_data[filename] = jsonOrParseWithTika(filename)
+        union_feature_names = union_feature_names | set(file_parsed_data[filename].keys())
 
     total_num_features = len(union_feature_names)
 
@@ -227,27 +240,36 @@ def compareValueSimilarity (fileDir, encoding = 'utf-8') :
 
     for filename in fileDir:
         file_parsed = []
-        parsedData = parser.from_file(filename)
-        file_metadata[filename] = parsedData["metadata"]
-
-        for key in parsedData["metadata"].keys() :
-            value = parsedData["metadata"].get(key)[0]
-            if isinstance(value, list):
+        file_metadata[filename] = jsonOrParseWithTika(filename)
+        for key in file_metadata[filename].keys() :
+            if isinstance(file_metadata[filename].get(key), list):
                 value = ""
-                for meta_value in parsedData["metadata"].get(key)[0]:
-                    value += meta_value
-            file_parsed.append(str(key.strip(' ').encode(encoding) + ": " + value.strip(' ').encode(encoding)))
+                for meta_value in file_metadata[filename].get(key)[0]:
+                    value += str(meta_value)
+                value = value.encode(encoding)
+                    
+            else:
+                val = file_metadata[filename].get(key)
+                if isinstance(val, unicode) or isinstance(val, str):
+                    val = val.encode("ascii", "ignore")
+                    value = val.decode(encoding)
+                else:
+                    value = str(val).decode(encoding)
 
+            file_parsed.append(str(key.strip(' ').encode(encoding) + ": " + value.strip(' ').encode(encoding)))
+            
 
         file_parsed_data[filename] = set(file_parsed)
         union_feature_names = union_feature_names | set(file_parsed_data[filename])
+
 
     total_num_features = len(union_feature_names)
     
     for filename in file_parsed_data.keys():
         overlap = {}
-        overlap = file_parsed_data[filename] & set(union_feature_names) 
+        overlap = file_parsed_data[filename] & set(union_feature_names)
         resemblance_scores[filename] = float(len(overlap))/total_num_features
+        
 
     sorted_resemblance_scores = sorted(resemblance_scores.items(), key=operator.itemgetter(1), reverse=True)
     return sorted_resemblance_scores, file_metadata
