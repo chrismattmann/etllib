@@ -82,7 +82,7 @@ def main(argv=None):
              
 
        if not os.path.exists(jsonFile):
-           print >>sys.stderr,"Path: ["+jsonFile+"] does not exist!\n"
+           sys.stderr.write("Path: ["+jsonFile+"] does not exist!\n")
            return 2
        
        if objectType == None:

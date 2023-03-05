@@ -146,8 +146,8 @@ def main(argv = None):
             similarity_score.append(os.path.basename(tuple[0].rstrip(os.sep))+","+str(tuple[1]) + "," + tuple[0] + "," + convertKeyUnicode(file_parsed_data[tuple[0]])+'\n')
 
         with open(os.path.join(output_dir, "similarity-scores.txt"), "w") as f:
-	    f.write("Resemblance : \n")
-	    for tuple in sorted_resemblance_scores:
+            f.write("Resemblance : \n")
+            for tuple in sorted_resemblance_scores:
                 f.write(os.path.basename(tuple[0].rstrip(os.sep)) + ","+str(tuple[1]) + "," + tuple[0] + "," + convertKeyUnicode(file_parsed_data[tuple[0]]) + '\n')
             
         #generate cluster json
