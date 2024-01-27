@@ -47,6 +47,11 @@ python setup.py install
 
 The `bin` directory will be populated with the various command-line tools.
 
+Tutorial
+===
+
+Please see the [Tutorial](https://github.com/chrismattmann/etllib/wiki/Simple-ETLLib-Tutorial) that describes how to use ETLLib. Feedback welcomed!
+
 License
 ====
 This is licensed software; please see docs/LICENSE.txt.
