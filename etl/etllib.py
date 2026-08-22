@@ -200,7 +200,12 @@ def formatDate(theDoc):
         
 def postJsonDocToSolr(solrUrl, data):
     print("POST "+solrUrl)
-    req = urllib2.Request(solrUrl, data, {'Content-Type': 'application/json'})
+    # urllib requires a bytes body under Python 3; str raises TypeError.
+    # Solr reads the JSON update handler as UTF-8.
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    req = urllib2.Request(solrUrl, data,
+                          {'Content-Type': 'application/json; charset=utf-8'})
     try:
         f = urllib2.urlopen(req)
         print(f.read())
@@ -208,8 +213,20 @@ def postJsonDocToSolr(solrUrl, data):
         print("HTTP error(%s)" % err)
 
 
+def _loadJson(jsondata, encoding='utf-8'):
+    """json.loads with an explicit encoding for bytes input.
+
+    json.loads accepted an encoding keyword under Python 2; it was deprecated
+    in 3.1 and removed in 3.9, so passing it raises TypeError. Under Python 3
+    str input is already decoded and bytes input is decoded here.
+    """
+    if isinstance(jsondata, (bytes, bytearray)):
+        jsondata = jsondata.decode(encoding)
+    return json.loads(jsondata)
+
+
 def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
-    jsondoc = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
+    jsondoc = _loadJson(jsondata, encoding) if unmarshall else jsondata
     if "boost" in jsondoc:
         boost = jsondoc["boost"]
     else:
@@ -218,7 +235,7 @@ def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     return json.dumps(jsonwrapper)
 
 def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
-    jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
+    jsondocs = _loadJson(jsondata, encoding) if unmarshall else jsondata
     return json.dumps(jsondocs)
 
 def jsonOrParseWithTika(filename):
