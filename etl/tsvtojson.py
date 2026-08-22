@@ -123,6 +123,34 @@ def dedup(dicts):
     unique_dicts = [dict(s) for s in unique_sets]
     return unique_dicts
 
+def detectEncoding(tsvFilePath, encodings=None):
+    """Return the first declared encoding that decodes the whole TSV.
+
+    Python 2's open() handed back bytes and left decoding to
+    readEncodedVal, so the encoding list was applied per value. Python 3
+    decodes at read time instead, which means a single non-UTF-8 byte
+    aborts the entire file before readEncodedVal is ever reached. The
+    list has to be applied here to preserve the original behaviour.
+
+    latin-1 is appended as a last resort because it maps every byte, so
+    the caller always gets a usable encoding back.
+    """
+    candidates = list(encodings) if encodings else ['utf-8']
+    if 'latin-1' not in candidates:
+        candidates.append('latin-1')
+
+    for encoding in candidates:
+        try:
+            with open(tsvFilePath, encoding=encoding) as tsv:
+                for _ in tsv:
+                    pass
+        except (UnicodeDecodeError, LookupError):
+            continue
+        else:
+            return encoding
+
+    return 'latin-1'
+
 def main(argv=None):
    if argv is None:
      argv = sys.argv
@@ -196,7 +224,10 @@ def main(argv=None):
            cols = headers.read().splitlines()
            verboseLog(cols)
            
-       with open (tsvFilePath) as tsv:
+       tsvEncoding = detectEncoding(tsvFilePath, encodings)
+       verboseLog("Reading ["+tsvFilePath+"] as ["+tsvEncoding+"]")
+
+       with open (tsvFilePath, encoding=tsvEncoding) as tsv:
             if uniqueField != None:
                 fieldCache = {}
                 
