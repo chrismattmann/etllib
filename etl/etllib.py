@@ -86,6 +86,30 @@ def cleanseBody(theDoc):
         theDoc["body"] = parsed["content"]
 
 
+def recoverMisdecoded(text):
+    """Re-decode a value whose UTF-8 bytes were read under a byte-preserving
+    single-byte codec such as latin-1.
+
+    The employment TSVs are mixed: the 2012 scrape wrote UTF-8 bytes for some
+    fields into files that are otherwise latin-1, so no single file-level
+    encoding is right for every value. Reading the file as latin-1 preserves
+    the bytes, and this restores the fields that were really UTF-8:
+
+        'Miguel A. Mu\xc3\xb1oz' -> 'Miguel A. Mu\xf1oz'   (was UTF-8)
+        'M\xe9xico'                -> unchanged              (was latin-1)
+
+    Python 2 got this for free because open() returned bytes and decoding
+    happened per value. Python 3 decodes at read time, so the recovery has to
+    be reapplied here. Values that do not round-trip are returned unchanged.
+    """
+    if not isinstance(text, str):
+        return text
+    try:
+        return text.encode('latin-1').decode('utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return text
+
+
 def readEncodedVal(line, colnum, encodings=None):
     val = None
     if encodings != None and len(encodings) > 0:
@@ -95,7 +119,7 @@ def readEncodedVal(line, colnum, encodings=None):
                 if hasattr(line[colnum], 'decode'):
                     val = line[colnum].decode(encoding).encode("utf-8")
                 else:
-                    val = line[colnum]
+                    val = recoverMisdecoded(line[colnum])
 
             except UnicodeDecodeError:
                 if encoding != encodings[-1]:
@@ -123,8 +147,7 @@ def convertToUTF8(src):
         val = src
     except:
         val = src
-    finally:
-        return val
+    return val
 
 def unravelStructs(theDoc):
     if "countries" in theDoc:
@@ -153,10 +176,10 @@ def _createOrAppendToList(doc, key, val):
         
 def requiresDateFormating(dateString):
     if 'T' not in dateString:
-        if  re.search('^\d{4}-\d{1,2}-\d{1,2}$', dateString) == None:
+        if  re.search(r'^\d{4}-\d{1,2}-\d{1,2}$', dateString) == None:
             raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
         return True
-    if  re.search('^\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
+    if  re.search(r'^\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
         raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
     return False
 
@@ -177,7 +200,12 @@ def formatDate(theDoc):
         
 def postJsonDocToSolr(solrUrl, data):
     print("POST "+solrUrl)
-    req = urllib2.Request(solrUrl, data, {'Content-Type': 'application/json'})
+    # urllib requires a bytes body under Python 3; str raises TypeError.
+    # Solr reads the JSON update handler as UTF-8.
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    req = urllib2.Request(solrUrl, data,
+                          {'Content-Type': 'application/json; charset=utf-8'})
     try:
         f = urllib2.urlopen(req)
         print(f.read())
@@ -185,8 +213,20 @@ def postJsonDocToSolr(solrUrl, data):
         print("HTTP error(%s)" % err)
 
 
+def _loadJson(jsondata, encoding='utf-8'):
+    """json.loads with an explicit encoding for bytes input.
+
+    json.loads accepted an encoding keyword under Python 2; it was deprecated
+    in 3.1 and removed in 3.9, so passing it raises TypeError. Under Python 3
+    str input is already decoded and bytes input is decoded here.
+    """
+    if isinstance(jsondata, (bytes, bytearray)):
+        jsondata = jsondata.decode(encoding)
+    return json.loads(jsondata)
+
+
 def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
-    jsondoc = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
+    jsondoc = _loadJson(jsondata, encoding) if unmarshall else jsondata
     if "boost" in jsondoc:
         boost = jsondoc["boost"]
     else:
@@ -195,7 +235,7 @@ def prepareDocForSolr(jsondata, unmarshall=True, encoding='utf-8'):
     return json.dumps(jsonwrapper)
 
 def prepareDocsForSolr(jsondata, unmarshall=True, encoding='utf-8'):
-    jsondocs = json.loads(jsondata, encoding=encoding) if unmarshall else jsondata
+    jsondocs = _loadJson(jsondata, encoding) if unmarshall else jsondata
     return json.dumps(jsondocs)
 
 def jsonOrParseWithTika(filename):

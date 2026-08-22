@@ -82,6 +82,17 @@ def collect(dicts):
     return unique_feats
 
 def near_dedup_jaccard(dicts,threshold=0.1):
+    """Drop records whose Jaccard resemblance to the running pivot is at
+    least threshold.
+
+    Note the direction: a HIGHER threshold keeps MORE records, because a
+    record is only discarded once it is at least that similar to the
+    pivot. A threshold of 0.1 discards anything sharing even a tenth of
+    its field values, which on job-posting data is nearly everything.
+    """
+    if not dicts:
+        return list()
+
     all_features = collect(dicts) #set 
     # compute jaccard score
     jac_key = "jaccard_score"
@@ -97,7 +108,7 @@ def near_dedup_jaccard(dicts,threshold=0.1):
     dedup.append(pivot)
     dropped = 0
 
-    for i in range(1, len(sorted_d)-1):
+    for i in range(1, len(sorted_d)):
         d = sorted_d[i]
         d_feats = set()
         d_feats.update(set(d.values()))
@@ -114,6 +125,11 @@ def near_dedup_jaccard(dicts,threshold=0.1):
         
     verboseLog("Filtered "+str(dropped)+" near duplicates.")
 
+    # jac_key is internal bookkeeping; it must not reach the output
+    # documents, which are posted to Solr verbatim.
+    for d in dedup:
+        d.pop(jac_key, None)
+
     return dedup
     
     
@@ -122,6 +138,34 @@ def dedup(dicts):
     unique_sets = set(frozenset(d.items()) for d in dicts)
     unique_dicts = [dict(s) for s in unique_sets]
     return unique_dicts
+
+def detectEncoding(tsvFilePath, encodings=None):
+    """Return the first declared encoding that decodes the whole TSV.
+
+    Python 2's open() handed back bytes and left decoding to
+    readEncodedVal, so the encoding list was applied per value. Python 3
+    decodes at read time instead, which means a single non-UTF-8 byte
+    aborts the entire file before readEncodedVal is ever reached. The
+    list has to be applied here to preserve the original behaviour.
+
+    latin-1 is appended as a last resort because it maps every byte, so
+    the caller always gets a usable encoding back.
+    """
+    candidates = list(encodings) if encodings else ['utf-8']
+    if 'latin-1' not in candidates:
+        candidates.append('latin-1')
+
+    for encoding in candidates:
+        try:
+            with open(tsvFilePath, encoding=encoding) as tsv:
+                for _ in tsv:
+                    pass
+        except (UnicodeDecodeError, LookupError):
+            continue
+        else:
+            return encoding
+
+    return 'latin-1'
 
 def main(argv=None):
    if argv is None:
@@ -196,7 +240,10 @@ def main(argv=None):
            cols = headers.read().splitlines()
            verboseLog(cols)
            
-       with open (tsvFilePath) as tsv:
+       tsvEncoding = detectEncoding(tsvFilePath, encodings)
+       verboseLog("Reading ["+tsvFilePath+"] as ["+tsvEncoding+"]")
+
+       with open (tsvFilePath, encoding=tsvEncoding) as tsv:
             if uniqueField != None:
                 fieldCache = {}
                 
