@@ -82,6 +82,17 @@ def collect(dicts):
     return unique_feats
 
 def near_dedup_jaccard(dicts,threshold=0.1):
+    """Drop records whose Jaccard resemblance to the running pivot is at
+    least threshold.
+
+    Note the direction: a HIGHER threshold keeps MORE records, because a
+    record is only discarded once it is at least that similar to the
+    pivot. A threshold of 0.1 discards anything sharing even a tenth of
+    its field values, which on job-posting data is nearly everything.
+    """
+    if not dicts:
+        return list()
+
     all_features = collect(dicts) #set 
     # compute jaccard score
     jac_key = "jaccard_score"
@@ -97,7 +108,7 @@ def near_dedup_jaccard(dicts,threshold=0.1):
     dedup.append(pivot)
     dropped = 0
 
-    for i in range(1, len(sorted_d)-1):
+    for i in range(1, len(sorted_d)):
         d = sorted_d[i]
         d_feats = set()
         d_feats.update(set(d.values()))
@@ -113,6 +124,11 @@ def near_dedup_jaccard(dicts,threshold=0.1):
             dropped = dropped + 1
         
     verboseLog("Filtered "+str(dropped)+" near duplicates.")
+
+    # jac_key is internal bookkeeping; it must not reach the output
+    # documents, which are posted to Solr verbatim.
+    for d in dedup:
+        d.pop(jac_key, None)
 
     return dedup
     
