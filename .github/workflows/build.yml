@@ -1,0 +1,61 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # python-magic is a ctypes binding; the shared library is a system
+      # package, not a wheel dependency.
+      - name: Install libmagic
+        run: sudo apt-get update && sudo apt-get install -y libmagic1
+
+      # hirlite is declared in install_requires but no longer builds on any
+      # current Python, so the declared dependencies are installed directly.
+      # The tool that needs it, translatejson, is superseded by BigTranslate's
+      # Pantogloss step and is covered by an xfail.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools iso8601 python-magic 'tika>=1.13' pytest
+          python -m pip install --no-deps -e .
+
+      - name: Test
+        run: python -m pytest tests/ -v
+
+  compile:
+    name: Compile with warnings as errors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Catches the class of fault this suite was written for: tab and space
+      # mixing, invalid escape sequences, and return inside finally, all of
+      # which are warnings today and hard errors in later Python.
+      - name: Byte-compile every module
+        run: |
+          for f in etl/*.py; do
+            echo "checking $f"
+            python -W error::SyntaxWarning -c \
+              "import py_compile; py_compile.compile('$f', doraise=True)"
+          done
