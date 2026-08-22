@@ -147,8 +147,7 @@ def convertToUTF8(src):
         val = src
     except:
         val = src
-    finally:
-        return val
+    return val
 
 def unravelStructs(theDoc):
     if "countries" in theDoc:
@@ -177,10 +176,10 @@ def _createOrAppendToList(doc, key, val):
         
 def requiresDateFormating(dateString):
     if 'T' not in dateString:
-        if  re.search('^\d{4}-\d{1,2}-\d{1,2}$', dateString) == None:
+        if  re.search(r'^\d{4}-\d{1,2}-\d{1,2}$', dateString) == None:
             raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
         return True
-    if  re.search('^\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
+    if  re.search(r'^\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$', dateString) == None:
         raise RuntimeError("Incorrect DateTime format. Check solr DateField.")
     return False
 

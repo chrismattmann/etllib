@@ -75,7 +75,7 @@ def main(argv=None):
           elif option in ('-v', '--verbose'):
              global _verbose
              _verbose = True
-	  elif option in ('-d', '--directory'):
+          elif option in ('-d', '--directory'):
              dirFile = value
        
        for filename in (os.listdir(dirFile) if dirFile else sys.stdin):
