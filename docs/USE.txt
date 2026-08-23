@@ -29,9 +29,11 @@ computer:
     
 ETLlib Library
     The ETLlib Library is a Python-based API for munging  data and
-    doing ETL. The library was originally developed as a set of Python scripts 
-    to be integrated into an Apache OODT ETL process through parsing/Apache Tika 
-    cleanup and then on to Apache Solr for analytics.
+    doing ETL. The library was originally developed as a set of Python scripts
+    to be integrated into an Apache OODT ETL process through parsing/Apache Tika
+    cleanup and then on to Apache Solr for analytics. Those workflows now run
+    on Mnemosyne, the continuation of Apache OODT after the ASF retired it to
+    the Attic in 2023.
     
 This document describes how to use the above three items, with special
 attention to the ETLlib library.
@@ -46,9 +48,11 @@ These commands enable you to reformulate
 aggregate  JSON documents, cleanse their fields (which may contain UTF-8 or other 
 weird encodings), convert from different formats (e.g., TSV to JSON), translate 
 fields within the documents using Apache Tika, and then to post those documents to Apache Solr. 
-These were developed initially independently as python scripts that are wrapped using 
-Apache OODT ETL workflows, but later Chris Mattmann <mattmann@apache.org>
-decided they would be useful as a installable python library.
+These were developed initially independently as python scripts that were
+wrapped using Apache OODT ETL workflows. Those workflows now run on
+Mnemosyne (https://github.com/chrismattmann/mnemosyne), the continuation
+of Apache OODT. Chris Mattmann <mattmann@apache.org> later decided the
+scripts would be useful as an installable python library.
 
 To use these commands from your interactive prompt, you just need to make sure
 your shell's PATH environment variable includes the directory where the

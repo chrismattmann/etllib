@@ -17,10 +17,12 @@ Includes tools to handle image similarity.
 
 This is an initial release of etllib supporting capability for
 reformulating JSON data using Tika_ and JSON read/write in prep
-for ETL using OODT_ into Solr_.
+for ETL using Apache OODT into Solr_. Those workflows now run
+on Mnemosyne_, the continuation of Apache OODT after the ASF
+retired it to the Attic in 2023.
 
 
 .. References:
-.. _OODT: http://oodt.apache.org/
+.. _Mnemosyne: https://github.com/chrismattmann/mnemosyne
 .. _Tika: http://tika.apache.org/
 .. _Solr: http://lucene.apache.org/solr/

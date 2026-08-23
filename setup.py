@@ -40,11 +40,13 @@ etllib
 .. contents::
 
 ETLlib provides functionality for munging through and repackaging
-JSON, TSV and other data for preparation and submission (ETL) to Apache Solr. The 
-library takes advantage of Apache Tika, and is callable from Apache OODT.
+JSON, TSV and other data for preparation and submission (ETL) to Apache Solr. The
+library takes advantage of Apache Tika, and is callable from Mnemosyne
+(the continuation of Apache OODT after the ASF retired it to the Attic
+in 2023) and similar workflows.
 
 '''
-_keywords = 'xdata darpa etl tika solr oodt jpl'
+_keywords = 'xdata darpa etl tika solr mnemosyne jpl'
 _classifiers = [
     'Development Status :: 3 - Alpha',
     'Environment :: Console',
