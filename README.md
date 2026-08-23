@@ -1,10 +1,14 @@
-ETL lib
-====
+ETLLib
+======
 
-This is the ETL lib package.  It provides an API
-to munge and prepare JSON, TSV and other data using Apache Tika and
-JSON parsing/loading for ETL via Apache OODT (or other libs)
-into Apache Solr.  It also provides the following command-line tools:
+[![Build](https://github.com/chrismattmann/etllib/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/chrismattmann/etllib/actions/workflows/build.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](docs/LICENSE.txt)
+[![Python](https://img.shields.io/badge/python-3.9%E2%80%933.13-3776AB.svg)](https://www.python.org/)
+[![Website](https://img.shields.io/badge/website-chrismattmann.github.io%2Fetllib-informational.svg)](https://chrismattmann.github.io/etllib/)
+
+ETLLib is a command-line toolkit and Python library for munging and preparing JSON, TSV, and related data — using [Apache Tika](http://tika.apache.org/) where field cleanup helps — for loading into [Apache Solr](https://lucene.apache.org/solr/). It is not a workflow engine. The CLIs and the `etl` library are meant to be called from the shell, from Python, or from [Mnemosyne](https://github.com/chrismattmann/mnemosyne)-style workflows such as [BigTranslate](https://github.com/chrismattmann/bigtranslate).
+
+It provides the following command-line tools:
 
 ```
 repackage
@@ -12,7 +16,7 @@ repackage
 poster
     Posts a JSON doc to Solr.
 repackageandpost
-	Combines repackage and posting to Solr without the need for an intermediate file.
+    Combines repackage and posting to Solr without the need for an intermediate file.
 tsvtojson
     Takes an input TSV file and parses it with a set of column headers and outputs a JSON file.
 translatejson
