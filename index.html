@@ -1,0 +1,274 @@
+<html lang="en">
+  <head>
+    <title>ETLLib</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/custom.css?v=1"/>
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+  </head>
+  <body>
+    <header>
+      <div class="container-fluid">
+
+        <div class="row">
+          <div class="col-sm-12">
+            <ul class="nav justify-content-end">
+              <li class="nav-item">
+                <a class="nav-link active" href="#problem"><span class="d-none d-sm-inline">The Problem</span><span class="d-sm-none">Problem</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#etllib"><span class="d-none d-sm-inline">ETLLib</span><span class="d-sm-none">About</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#resources"><span class="d-none d-sm-inline">Resources</span><span class="d-sm-none">Docs</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#contributors"><span class="d-none d-sm-inline">Contributors</span><span class="d-sm-none">Team</span></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="row align-items-center">
+          <div class="offset-md-1 col-md-5">
+            <img src="img/header.png" width="100%" alt="">
+          </div>
+          <div class="offset-md-1 col-md-5 white-text">
+            <h1 class="etllib">ETLLIB</h1>
+            <p>A command-line toolkit and Python library<br/>
+              for JSON, TSV, and Solr ETL
+          </div>
+        </div>
+
+       </div>
+
+   </header>
+
+    <section id="problem" class="container section-space">
+      <div class="row align-items-center">
+        <div class="col-12 breathing-space">
+          <h2>THE PROBLEM</h2>
+          <hr/>
+        </div>
+        <div class="col-12 col-md-4 text-center text-md-left">
+          <img src="img/the-problem.png" alt=""/>
+        </div>
+        <div class="col-12 col-md-8">
+          <div class="row breathing-space">
+            <div class="col-12 col-sm-2 col-md-1">
+              <img src="img/icon-1.png" width="63" alt=""/>
+            </div>
+            <div class="col-12 col-sm-10 col-md-10 offset-md-1">
+              <h4>MESSY FILES, MANY ROWS</h4>
+              <p class="grey-text">DARPA XDATA corpora such as Computrabajo employment TSVs and Kiva JSON dumps arrive as huge aggregates with mixed encodings, optional columns, and paging wrappers. They are not Solr documents yet.</p>
+            </div>
+          </div>
+          <div class="row breathing-space">
+            <div class="col-12 col-sm-2 col-md-1">
+              <img src="img/icon-2.png" width="63" alt=""/>
+            </div>
+            <div class="col-12 col-sm-10 col-md-10 offset-md-1">
+              <h4>ETL IS A SCRIPT, NOT A PLATFORM</h4>
+              <p class="grey-text">You often need a small, installable set of commands &mdash; TSV to JSON, split an aggregate, post to Solr &mdash; that a person can run from the shell or that a larger workflow can invoke. You do not need another engine.</p>
+            </div>
+          </div>
+          <div class="row breathing-space">
+            <div class="col-12 col-sm-2 col-md-1">
+              <img src="img/icon-3.png" width="63" alt=""/>
+            </div>
+            <div class="col-12 col-sm-10 col-md-10 offset-md-1">
+              <h4>WORKFLOWS NEED A LIBRARY</h4>
+              <p class="grey-text">Mnemosyne-style pipelines such as <a href="https://github.com/chrismattmann/bigtranslate">BigTranslate</a> call these tools as PGE steps. The same functions should also import cleanly from Python.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     </section>
+
+     <section id="etllib" class="container-fluid alternate-lightbg section-space">
+       <div class="container text-center">
+          <h2 class="col-sm-12 breathing-space">WHAT IS ETLLIB?</h2>
+          <hr/>
+          <p class="col-sm-12 breathing-space">
+          A command-line toolkit and Python library for munging JSON, TSV, and related data. ETLLib uses <a href="http://tika.apache.org/">Apache Tika<sup>TM</sup></a> where field cleanup helps, and posts the result to <a href="https://lucene.apache.org/solr/">Apache Solr<sup>TM</sup></a>. It is not <a href="https://github.com/chrismattmann/mnemosyne">Mnemosyne</a>. Workflow engines call it; they do not replace it.
+          </p>
+          <div class="row">
+            <div class="col-md-3 breathing-space">
+              <i class="fa fa-terminal fa-3x fa-color" aria-hidden="true"></i>
+              <h4>Six commands</h4>
+              <p><code>tsvtojson</code>, <code>repackage</code>, <code>poster</code>, <code>repackageandpost</code>, <code>translatejson</code>, and <code>similarity</code> install on your <code>PATH</code> and do one job each.</p>
+            </div>
+            <div class="offset-md-1 col-md-3 breathing-space">
+              <i class="fa fa-code fa-3x fa-color" aria-hidden="true"></i>
+              <h4>A Python library</h4>
+              <p>The same steps are functions in <code>etl.etllib</code>. If you would rather not shell out, import them. The CLIs are thin wrappers around that API.</p>
+            </div>
+            <div class="offset-md-1 col-md-3 breathing-space">
+              <i class="fa fa-cogs fa-3x fa-color" aria-hidden="true"></i>
+              <h4>Fits Mnemosyne workflows</h4>
+              <p>BigTranslate and similar pipelines invoke ETLLib as PGE commands for TSV conversion, JSON splitting, and Solr ingest. Bring your own workflow; ETLLib stays small.</p>
+            </div>
+          </div>
+       </div>
+     </section>
+
+     <section id="pipeline" class="container section-space">
+       <div class="container text-center">
+          <h2 class="col-sm-12 breathing-space">HOW IT WORKS</h2>
+          <hr/>
+          <p class="col-sm-12 breathing-space">A typical employment-TSV or Kiva-JSON path is three commands. Encoding recovery, optional columns, and Tika field cleanup happen along the way.</p>
+          <div class="row">
+            <div class="col-md-3 breathing-space">
+              <div class="step-num">1</div>
+              <h4>TSV &rarr; JSON</h4>
+              <p><code>tsvtojson</code> reads a column-header file and an encoding list, then emits an aggregate JSON document keyed by object type &mdash; for example <code>employmentjobs</code>.</p>
+            </div>
+            <div class="offset-md-1 col-md-3 breathing-space">
+              <div class="step-num">2</div>
+              <h4>Split the aggregate</h4>
+              <p><code>repackage</code> pulls each record out of the wrapper (and can run Tika over messy fields). One country-day file becomes thousands of per-job JSON documents.</p>
+            </div>
+            <div class="offset-md-1 col-md-3 breathing-space">
+              <div class="step-num">3</div>
+              <h4>Post to Solr</h4>
+              <p><code>poster</code> (or <code>repackageandpost</code>, skipping the intermediate files) sends each document to Solr so the corpus can be queried and faceted.</p>
+            </div>
+          </div>
+       </div>
+     </section>
+
+     <section id="resources" class="container-fluid alternate-lightbg section-space">
+        <div class="container">
+          <h2 class="col-sm-12 breathing-space">RESOURCES</h2>
+          <hr/>
+
+          <div class="row breathing-space">
+
+            <div class="col">
+              <div class="row">
+                <div class="col-sm-1">
+                  <img src="img/code.png" alt=""/>
+                </div>
+                <div class="offset-sm-1 col-sm-9">
+                  <h6>GITHUB</h6>
+                  <p>Source, tests, and CI for Python 3.9&ndash;3.13 live on GitHub. Apache License 2.0.</p>
+		  <a class="btn btn-outline-navy circular-border" href="https://github.com/chrismattmann/etllib">VIEW PROJECT</a>
+			</div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="row">
+                <div class="col-sm-1">
+                  <img src="img/publication.png" alt=""/>
+                </div>
+                <div class="offset-sm-1 col-sm-9">
+                  <h6>TUTORIAL</h6>
+                  <p>A walkthrough from CSV/TSV through <code>tsvtojson</code> and <code>repackage</code> is on the project wiki.</p>
+                  <a class="btn btn-outline-navy circular-border" href="https://github.com/chrismattmann/etllib/wiki/Simple-ETLLib-Tutorial">READ THE TUTORIAL</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+     </section>
+
+
+     <section id="contributors" class="container-fluid alternate-darkbg white-text section-space">
+       <div class="container text-center breathing-space">
+          <h2 class="col-sm-12 breathing-space">Project Team</h2>
+          <hr/>
+
+          <div class="pmc-group">
+            <h4 class="pmc-subhead">Founder and Developer</h4>
+            <div class="row names founder-row justify-content-center">
+            </div>
+          </div>
+
+          <div class="pmc-group">
+            <h4 class="pmc-subhead">Original Contributors</h4>
+            <div class="row names contributors-row justify-content-center">
+            </div>
+          </div>
+       </div>
+     </section>
+
+     <footer class="container-fluid footer-bg section-space">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-5">
+                  <div class="row">
+                    <div class="col-md-4 right-align">
+                        <a href="https://chrismattmann.github.io/etllib/" target="_blank">
+                            <img src="img/code.png" width="70%" alt="">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <ul style="list-style-type: none;">
+
+                            <li><a href="https://github.com/chrismattmann/" target="_blank"><h4 class="white-text">Chris Mattmann's GitHub</h4></a>
+                            <li><a class="white-text" href="http://mattmann.ai" target="_blank">Mattmann AI</a></li>
+                            <li><a class="white-text" href="https://github.com/sponsors/chrismattmann" target="_blank">Become
+                                a Sponsor</a></li>
+                            <li><a class="white-text" href="https://github.com/chrismattmann/etllib/issues/" target="_blank">Report a Bug</a></li>
+                        </ul>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+      var etllib = {
+        "chair": {
+          "chrismattmann": { "name": "Chris Mattmann" }
+        },
+        "roster": {
+          "chrismattmann": { "name": "Chris Mattmann" },
+          "dongnizh": { "name": "Dongni Zhang" },
+          "MJJoyce": { "name": "Michael Joyce" },
+          "Anthonyive": { "name": "Yuchen Zhang" },
+          "georgejose": { "name": "George Puthanpurackal" },
+          "Hedwig188": { "name": "Yawei Huang" },
+          "nutjob4life": { "name": "Sean Kelly" },
+          "adityasundaram": { "name": "Aditya Sundaram" },
+          "gsrika": { "name": "Srikanth" },
+          "smritish": { "name": "Smriti Sharma" }
+        }
+      };
+
+      function pmcCard(username, name, extraClass) {
+        var handle = (username || "").replace(/\s+/g, "");
+        var isFounder = extraClass && extraClass.indexOf("pmc-founder") !== -1;
+        var col = isFounder ? "col-12 col-md-4" : "col-12 col-sm-6 col-md-3";
+        var klass = col + " breathing-space pmc-person" + (extraClass ? " " + extraClass : "");
+        return '<div class="' + klass + '"><a href="https://github.com/' + handle + '">' +
+          '<img class="pmc-avatar" src="https://github.com/' + handle + '.png?size=200" alt="' + name + '"/>' +
+          '<h5>' + name + '</h5></a></div>';
+      }
+
+      var founderIds = {};
+      for (var chairId in etllib.chair) {
+        founderIds[chairId.replace(/\s+/g, "").toLowerCase()] = true;
+        $(".founder-row").append(pmcCard(chairId, etllib.chair[chairId].name, "pmc-founder"));
+      }
+      for (var username in etllib.roster) {
+        if (founderIds[username.replace(/\s+/g, "").toLowerCase()]) {
+          continue;
+        }
+        $(".contributors-row").append(pmcCard(username, etllib.roster[username]["name"]));
+      }
+    </script>
+  </body>
+</html>
