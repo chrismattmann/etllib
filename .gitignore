@@ -6,11 +6,12 @@
 .pyc
 .python-version
 */*.pyc
-/etllib.egg-info
+*.egg-info
 /doc.txt
 /build
 /dist
 .*.cfg
+.installed.cfg
 bin
 develop-eggs
 parts

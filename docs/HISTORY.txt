@@ -1,6 +1,12 @@
 Changelog
 *********
 
+1.1 - pyproject.toml packaging
+==============================
+
+Build with setuptools via ``pyproject.toml`` (same layout as tika-python).
+Python 3.10+. ``hirlite`` is the optional ``translate`` extra.
+
 0.0.2 - Refactor to use new Python-Tika lib
 ===========================================
 

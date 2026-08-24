@@ -1,0 +1,75 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=77" ]
+
+[project]
+name = "etllib"
+description = "Extract, Transform and Load library."
+readme = "README.md"
+keywords = [ "xdata", "darpa", "etl", "tika", "solr", "mnemosyne" ]
+license = "Apache-2.0"
+license-files = [ "docs/LICENSE.txt" ]
+authors = [ { name = "Chris Mattmann", email = "chris.mattmann@gmail.com" } ]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Database :: Front-Ends",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dynamic = [ "version" ]
+dependencies = [
+  "iso8601",
+  "python-magic",
+  "tika>=1.13",
+]
+
+[project.optional-dependencies]
+translate = [ "hirlite" ]
+
+[dependency-groups]
+tests = [
+  "pytest>=8",
+]
+
+[project.urls]
+homepage = "https://github.com/chrismattmann/etllib"
+repository = "https://github.com/chrismattmann/etllib.git"
+documentation = "https://chrismattmann.github.io/etllib"
+
+[project.scripts]
+poster = "etl.poster:main"
+repackage = "etl.repackage:main"
+repackageandpost = "etl.repackageandpost:main"
+tsvtojson = "etl.tsvtojson:main"
+translatejson = "etl.translatejson:main"
+similarity = "etl.similarity:main"
+
+[tool.setuptools]
+packages.find.include = [
+  "etl*",
+]
+
+[tool.setuptools.package-data]
+etl = [ "encoding.txt" ]
+
+[tool.setuptools.dynamic]
+version = {attr = "etl.__version__"}
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [ "-ra", "--showlocals", "--strict-config", "--strict-markers" ]
+log_level = "INFO"
+xfail_strict = true
+testpaths = [ "tests" ]
