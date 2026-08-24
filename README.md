@@ -39,9 +39,6 @@ Six console scripts install on your `PATH`. Each is a thin wrapper around
 | **translatejson** | Translate named JSON fields (Tika). Needs hirlite; see below |
 | **similarity** | Jaccard similarity / clusters over a directory (Tika metadata) |
 
-The installed command is `similarity`, not the old `imagesimilarity` name in
-`docs/USE.txt`.
-
 ## Install
 
 **Python 3.9–3.13.** CI covers that range. You also need the **libmagic**
