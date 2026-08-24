@@ -1,139 +1,109 @@
-Using ETLlib
-****************
+Using ETLLib
+************
 
-Installing the ETLlib package makes available four things on your
-computer:
+ETLLib is a command-line toolkit and a Python library (``etl.etllib``) for
+munging JSON, TSV, and related data — using Apache Tika_ where field cleanup
+helps — and posting the result to Apache Solr_. It is not a workflow engine.
+You run the commands from a shell, import the library from Python, or call
+them from a Mnemosyne_ pipeline. BigTranslate_ does the last of those.
 
-``repackage`` command
-    The ``repackage`` command takes an original paged JSON file, strips
-    off the paging information, isolates the identified object type (e.g., "teams"
-    or "journal_entries", etc.), and may perform some basic cleaning and metadata
-    addition using Apache Tika on the fields within the JSON document.
-``poster`` command
-    The ``poster`` command lets post individual reformulated  JSON documents
-    to Apache Solr.
-``repackageandpost`` command
-    The repackageandpost command combines repackage, and poster, and
-    obviates the need to store the repackaged JSON doc as an intermediate file, and
-    then repackages (keeps docs in memory) and then posts directly to Apache Solr.
-``tsvtojson`` command
-    Takes an input TSV file and parses it with a set of column headers and outputs a 
-    JSON file.
-``translatejson`` command
-    Takes an input JSON file and a column header file and cred file and translates from 
-    source lang to dest lang using Bing's API and Apache Tika.
-``imagesimilarity`` command
-    Computes the similarity between a directory full of image files using a feature-based 
-    approach based on Jaccard's algorithm. Clusters scores. Uses Tika.
-    
-    
-ETLlib Library
-    The ETLlib Library is a Python-based API for munging  data and
-    doing ETL. The library was originally developed as a set of Python scripts
-    to be integrated into an Apache OODT ETL process through parsing/Apache Tika
-    cleanup and then on to Apache Solr for analytics. Those workflows now run
-    on Mnemosyne, the continuation of Apache OODT after the ASF retired it to
-    the Attic in 2023.
-    
-This document describes how to use the above three items, with special
-attention to the ETLlib library.
+Typical path::
+
+    tsvtojson → repackage → poster
+         TSV        split      Solr
+
+Python 3.9–3.13. Install with ``pip install -e .`` after libmagic is present
+(``brew install libmagic`` or ``apt-get install libmagic1``). If ``hirlite``
+fails to build, install the other dependencies and use ``pip install --no-deps
+-e .``. See the README and the wiki_ for the full install.
 
 Commands
 ========
 
-After installing the ETLlib package,  new commands are made available on
-your system, ``repackage`` and ``poster`` and ``repackageandpost`` and 
-``tsvtojson`` and ``translatejson`` and ``imagesimiliarity``..  
-These commands enable you to reformulate 
-aggregate  JSON documents, cleanse their fields (which may contain UTF-8 or other 
-weird encodings), convert from different formats (e.g., TSV to JSON), translate 
-fields within the documents using Apache Tika, and then to post those documents to Apache Solr. 
-These were developed initially independently as python scripts that were
-wrapped using Apache OODT ETL workflows. Those workflows now run on
-Mnemosyne (https://github.com/chrismattmann/mnemosyne), the continuation
-of Apache OODT. Chris Mattmann <mattmann@apache.org> later decided the
-scripts would be useful as an installable python library.
+Six console scripts install on your ``PATH``. Each is a thin wrapper around
+``etl.etllib``. Run ``command -h`` for the live usage string. The installed
+similarity command is ``similarity``, not ``imagesimilarity``.
 
-To use these commands from your interactive prompt, you just need to make sure
-your shell's PATH environment variable includes the directory where the
-commands are installed.  On most systems, these two commands are installed in::
+``tsvtojson``
+    TSV plus a column-header file → one aggregate JSON file. ``-s`` (Jaccard
+    near-duplicate threshold, 0–1) is required; a higher value keeps more.
+    ``-j`` refuses to overwrite. Optional columns end in ``:``; a ``*`` suffix
+    is also copied to ``id``.
 
-    /usr/bin
+``repackage``
+    Pull the list under ``-o`` out of an aggregate JSON and write one
+    ``{id}.json`` per record into the current directory. May flatten nested
+    structs and Tika-cleanse HTML ``body`` fields.
 
-However, on Mac OS X, the installation location may be::
+``poster``
+    POST existing JSON documents to Solr's JSON update handler. Paths on stdin
+    (one per line) or ``-d`` a directory.
 
-    /Library/Frameworks/Python.framework/Versions/Current/bin
-    
-And on Windows, it may be::
+``repackageandpost``
+    ``repackage`` then ``poster`` without writing the intermediate files.
+    Stdin is a list of *aggregate* JSON paths.
 
-    c:\Program Files\Python
-    
-Note also that some interactive shells create a cache of commands in order to
-execute your requests more quickly.  You may need to force your shell to
-re-build that cache.  The csh and tcsh shells are two such examples; you can
-make these shells rebuild their caches by running the ``rehash`` command.
+``translatejson``
+    Translate named JSON fields via ``tika.translate``, with an rlite cache
+    (``-r``). Needs hirlite, which often does not build on current Python.
+    For many-to-English at scale, use BigTranslate_ / Pantogloss instead.
+    There is no Bing cred file.
 
+``similarity``
+    Jaccard similarity over Tika metadata (keys or values) for files in a
+    directory, then cluster. Writes JSON consumed by the D3 pages under
+    ``html/``.
 
-Use from Shell Scripts
-----------------------
+Interactive shells such as csh/tcsh cache ``PATH``; run ``rehash`` after
+install if a new command is not found.
 
-The ``repackage`` and ``poster`` and ``repackageandpost`` and ``tsvtojson`` and
-``translatejson`` and ``imagesimilarity`` commands  may be used 
-from shell scripts as well.  The only 
-requirement for making these  commands available to shell scripts is the same as 
-for interactive sessions:  the shell's PATH environment variable must include the 
-directory that contains the commands.
+Examples
+========
 
-Here is a sample shell script that repackages a  Teams JSON file of 20 aggregate
-records, and outputs 20 individual Teams JSON files ::
+Kiva aggregate JSON, one file per team::
 
     #!/bin/bash
-
-    for ag in $(ls /data/xdata/Kiva/raw/RAW__json_teams_9Feb2013); do 
-        repackage -j $ag -o teams
+    for ag in /data/xdata/Kiva/raw/RAW__json_teams_9Feb2013/*; do
+        repackage -j "$ag" -o teams
     done
 
-    
-The above shell script assumes that ``repackage`` will be found in
-``/usr/local/bin``, ``/usr/bin``, or ``/bin``.  It then loops through
-the aggregate teams JSON files from the Kiva raw dataset and then hands
-each aggregate JSON file to the repackage script, which unravels those
-1234 teams JSON data files into 1234 * 20 = 24680 individual team JSON files.
+Pipe one journal-entries aggregate to Solr without an intermediate file::
 
-The rest of the commands may also be used from a shell script.  
+    echo "/data/xdata/Kiva/raw/RAW__json_journalEntries_04Mar2013/365/191677_journalentries_pg1_retreived-2013_03_04_21_56.json" \
+    | repackageandpost -u "http://localhost:8080/solr/journalentries/update/json?commit=true" -o journal_entries -v
 
-Some example working commands are:
+Computrabajo TSV → aggregate JSON → one JSON file per job::
 
-Pipe a single  JSON journal entries file into the repackageandpost script::
+    tsvtojson -t data/staging/computrabajo-ve-20121108.tsv \
+              -j data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json \
+              -c conf/colheaders.txt -o employmentjobs -e conf/encoding.txt -s 0.8 -v
 
-echo "/data/xdata/Kiva/raw/RAW__json_journalEntries_04Mar2013/365/191677_journalentries_pg1_retreived-2013_03_04_21_56.json" \
-| repackageandpost -u "http://localhost:8080/solr/journalentries/update/json?commit=true" -o journal_entries -v
+    cd data/jobs/repackage/1/output
+    repackage -j ../../tsvtojson/1/output/computrabajo-ve-20121108.json -o employmentjobs
 
-Take in an input TSV file named computrabajo-ve-20121108.tsv and turn it into a JSON file with a root object named employmentjobs using the provided colheaders.txt file::
+Translate selected fields (Tika; needs hirlite). ``-r`` is the SQLite-style
+rlite cache path::
 
-tsvtojson -t data/staging/computrabajo-ve-20121108.tsv -j data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json -c conf/colheaders.txt -o employmentjobs
+    translatejson -i in.json -j out.json -c translate.cols -f es -t en -r ./translation.rdb -v
 
-Extract out the ~9000 or so jobs present in computrabajo-ve-20121108.json under the "employmentjobs" key:
+Similarity over a directory of files::
 
-repackage -j ../../../../../data/jobs/tsvtojson/1/output/computrabajo-ve-20121108.json -o employmentjobs
+    similarity -f "$HOME/Pictures" -o ./similarity-out --threshold 0.01 --maxnode 10
 
-Translate the fields defined in translate.cols in the JSON file named 648c3a4a-22d1-4a43-b0da-9c8e45716e40.json from spanish ("es") to english ("en") and output the translated JSON named 648c3a4a-22d1-4a43-b0da-9c8e45716e40-t.json, using Bing and Apache Tika and the provided credentials:: 
+Library
+=======
 
-translatejson -i data/jobs/repackager/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716e40.json -j data/jobs/translate/1/output/648c3a4a-22d1-4a43-b0da-9c8e45716e40-t.json -c src/tika-python/lib/translate.cols -p src/tika-python/lib/translator.creds -f es -t en -v
+The CLIs are the supported interface. The same steps are functions if you
+would rather not shell out::
 
-Compute the similarity of images in your $HOME/Pictures directory on Mac:
+    from etl.etllib import prepareDocs, writeDoc, recoverMisdecoded
+    from etl.tsvtojson import detectEncoding, near_dedup_jaccard
 
-cd $HOME/Pictures && imagesimilarity -m -f . > similarity-scores.txt
+These scripts began as DARPA XDATA helpers wrapped by Apache OODT workflows.
+Those workflows now run on Mnemosyne_.
 
-
-ETLlib Library
-===========
-
-The ETLlib Library is a Python-based application programming interface (API) for
-munging and processing  JSON data for ETL and analytics. In fact, the commands 
-``poster`` and ``repackage`` and ``repackageandpost`` and ``tsvtojson`` and ``translatejson`` 
-and ``imagesimilarity`` are implemented using the ETLlib Library.  If 
-shell-script programming is not to your taste, and you
-know Python, then using the ETLlib Library may be right for you.
-
-
+.. _Tika: http://tika.apache.org/
+.. _Solr: http://lucene.apache.org/solr/
+.. _Mnemosyne: https://github.com/chrismattmann/mnemosyne
+.. _BigTranslate: https://github.com/chrismattmann/bigtranslate
+.. _wiki: https://github.com/chrismattmann/etllib/wiki
