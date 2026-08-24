@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/chrismattmann/etllib/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/chrismattmann/etllib/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](docs/LICENSE.txt)
-[![Python](https://img.shields.io/badge/python-3.9%E2%80%933.13-3776AB.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-3776AB.svg)](https://www.python.org/)
 [![Website](https://img.shields.io/badge/website-chrismattmann.github.io%2Fetllib-informational.svg)](https://chrismattmann.github.io/etllib/)
 
 **ETLLib** is a command-line toolkit and Python library for munging JSON, TSV,
@@ -36,13 +36,15 @@ Six console scripts install on your `PATH`. Each is a thin wrapper around
 | **repackage** | Split an aggregate JSON into one `{id}.json` per record |
 | **poster** | POST JSON documents to Solr |
 | **repackageandpost** | Split and POST without writing the intermediate files |
-| **translatejson** | Translate named JSON fields (Tika). Needs hirlite; see below |
+| **translatejson** | Translate named JSON fields (Tika). Optional extra; see below |
 | **similarity** | Jaccard similarity / clusters over a directory (Tika metadata) |
 
 ## Install
 
-**Python 3.9–3.13.** CI covers that range. You also need the **libmagic**
-shared library (`python-magic` is only the ctypes binding).
+**Python 3.10–3.13.** CI covers that range. Packaging is `pyproject.toml`
+(setuptools), the same layout as [tika-python](https://github.com/chrismattmann/tika-python).
+You also need the **libmagic** shared library (`python-magic` is only the
+ctypes binding).
 
 ```bash
 man libmagic    # should exist after install
@@ -57,19 +59,23 @@ python3 -m pip install -e .
 tsvtojson -h
 ```
 
-`hirlite` is declared for `translatejson`'s translation cache and often fails
-to build on current Python. If `pip install -e .` dies on it, install the rest
-and skip it:
+`translatejson` needs **hirlite**, which often fails to build on current
+Python. It is an extra, not a required dependency:
 
 ```bash
-python3 -m pip install setuptools iso8601 python-magic 'tika>=1.13'
-python3 -m pip install --no-deps -e .
+python3 -m pip install -e ".[translate]"
 ```
 
-`translatejson` needs hirlite. For many-to-English at scale, use
+For many-to-English at scale, use
 [BigTranslate](https://github.com/chrismattmann/bigtranslate) / Pantogloss
-instead. Tika (`tika>=1.13`) is a normal dependency; there is no separate
-buildout `with-tika` extra.
+instead. Tika (`tika>=1.13`) is a normal dependency.
+
+Tests:
+
+```bash
+python3 -m pip install -e . --group=tests
+python3 -m pytest
+```
 
 ## Example
 

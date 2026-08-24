@@ -12,10 +12,11 @@ Typical path::
     tsvtojson → repackage → poster
          TSV        split      Solr
 
-Python 3.9–3.13. Install with ``pip install -e .`` after libmagic is present
-(``brew install libmagic`` or ``apt-get install libmagic1``). If ``hirlite``
-fails to build, install the other dependencies and use ``pip install --no-deps
--e .``. See the README and the wiki_ for the full install.
+Python 3.10–3.13. Packaging is ``pyproject.toml`` (setuptools). Install with
+``pip install -e .`` after libmagic is present (``brew install libmagic`` or
+``apt-get install libmagic1``). ``hirlite`` is the optional ``translate``
+extra (``pip install -e ".[translate]"``) and often fails to build on current
+Python. See the README and the wiki_ for the full install.
 
 Commands
 ========
@@ -45,9 +46,9 @@ similarity command is ``similarity``, not ``imagesimilarity``.
 
 ``translatejson``
     Translate named JSON fields via ``tika.translate``, with an rlite cache
-    (``-r``). Needs hirlite, which often does not build on current Python.
-    For many-to-English at scale, use BigTranslate_ / Pantogloss instead.
-    There is no Bing cred file.
+    (``-r``). Install the ``translate`` extra for hirlite; it often does not
+    build on current Python. For many-to-English at scale, use BigTranslate_
+    / Pantogloss instead. There is no Bing cred file.
 
 ``similarity``
     Jaccard similarity over Tika metadata (keys or values) for files in a
