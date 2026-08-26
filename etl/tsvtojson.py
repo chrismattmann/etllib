@@ -263,7 +263,14 @@ def main(argv=None):
                     else:
                         val = ''
                     
-                    jsonStruct[cols[num]] = val
+                    # ":" marks a column optional and "*" marks it as the id.
+                    # Both are instructions to this script, not part of the name,
+                    # so they must not survive into the document: a header of
+                    # "phoneNumber:" was producing the key "phoneNumber:", which
+                    # then reaches Solr as a field nobody declared and no query
+                    # asks for.
+                    name = cols[num].replace(":", "").replace("*", "")
+                    jsonStruct[name] = val
                     if "*" in cols[num]:
                         jsonStruct["id"] = val    
                 
